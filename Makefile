@@ -3,8 +3,8 @@
 CXX		= g++
 
 CPPFLAGS	=
-CXXFLAGS	= -O3 -Wall -pipe
-LDFLAGS		=
+CXXFLAGS	= -O -finline-functions -Wall -pedantic -pipe
+LDFLAGS		= -s
 
 OBJS		= echo.o libscheduler/libscheduler.a libfastcgi/libfastcgi.a
 
