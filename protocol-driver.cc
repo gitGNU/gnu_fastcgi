@@ -144,7 +144,7 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 			name.assign(reinterpret_cast<const char*>(p), name_len);
 			data.assign(reinterpret_cast<const char*>(p)+name_len, data_len);
 			cerr << "Setting " << name << " = " << data << endl;
-			req->second->params[name] = data;
+			const_cast< map<string,string>& >(req->second->params)[name] = data;
 			}
 		    else
 			cerr << "FCGIProtocolDriver received PARAMS for id "

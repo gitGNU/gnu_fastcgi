@@ -56,16 +56,18 @@ struct unknown_fcgi_request : public fcgi_error
 class FCGIRequest
     {
   public:
+    const u_int16_t id;
     const u_int16_t role;
     const bool keep_connection;
     const bool have_all_params;
     const bool aborted;
-    map<string,string> params;
+    const map<string,string> params;
 
     FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, u_int16_t role_, bool kc);
     ~FCGIRequest();
     void read(string& buf);
     void write(const string& buf);
+    void write(const void* buf, size_t cout);
     void end_request(u_int32_t appStatus, u_int8_t protStatus);
 
   protected:
@@ -74,7 +76,6 @@ class FCGIRequest
 
   private:
     FCGIProtocolDriver& driver;
-    u_int16_t id;
     };
 
 //
