@@ -23,8 +23,6 @@ FCGIProtocolDriver::~FCGIProtocolDriver()
 
 void FCGIProtocolDriver::process_input(const void* buf, size_t count)
     {
-    cerr << __FUNCTION__ << ": got " << count << " byte input." << endl;
-
     // Copy data to our own buffer.
 
     InputBuffer.append(static_cast<const u_int8_t*>(buf), count);
@@ -77,14 +75,9 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 			{
 			const BeginRequest* br =
 			    reinterpret_cast<const BeginRequest*>(InputBuffer.data()+sizeof(Header));
-			u_int16_t role  = (br->roleB1 << 8) + br->roleB0;
-
-			cerr << "TYPE_BEGIN_REQUEST: id = " << msg_id
-			     << ", role = " << role
-			     << ", flags = " << ((br->flags & FLAG_KEEP_CONN) == 1 ? "KEEP_CONN" : "none")
-			     << endl;
-
-			reqmap[msg_id] = new FCGIRequest(*this, msg_id, role,
+			reqmap[msg_id] = new FCGIRequest(*this,
+							 msg_id,
+							 (br->roleB1 << 8) + br->roleB0,
 							 (br->flags & FLAG_KEEP_CONN) == 1);
 			new_request_queue.push(msg_id);
 			}
@@ -93,7 +86,7 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 		case TYPE_ABORT_REQUEST:
 		    // Find the request in the reqmap and set the
 		    // abort flag.
-		    cerr << "Received message type TYPE_ABORT_REQUEST, id " << msg_id << "." << endl;
+
 		    req = reqmap.find(msg_id);
 		    if (req != reqmap.end())
 			{
@@ -109,7 +102,6 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 		    // Find the request in the reqmap and set the
 		    // environment.
 
-		    cerr << "Received message type TYPE_PARAMS, id " << msg_id << "." << endl;
 		    req = reqmap.find(msg_id);
 		    if (req != reqmap.end())
 			{
@@ -143,7 +135,6 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 			    }
 			name.assign(reinterpret_cast<const char*>(p), name_len);
 			data.assign(reinterpret_cast<const char*>(p)+name_len, data_len);
-			cerr << "Setting " << name << " = " << data << endl;
 			const_cast< map<string,string>& >(req->second->params)[name] = data;
 			}
 		    else
