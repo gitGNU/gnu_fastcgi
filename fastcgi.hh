@@ -88,7 +88,7 @@ class FCGIRequest
 
   private:
     FCGIProtocolDriver& driver;
-    u_int8_t tmp_buf[512];
+    u_int8_t tmp_buf[64];
     };
 
 //
@@ -125,7 +125,7 @@ class FCGIProtocolDriver
     reqmap_t reqmap;
     queue<u_int16_t> new_request_queue;
     basic_string<u_int8_t> InputBuffer;
-    u_int8_t tmp_buf[512];
+    u_int8_t tmp_buf[64];
     };
 
 #endif // !defined(__FASTCGI_HPP__)
