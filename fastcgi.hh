@@ -63,13 +63,19 @@ class FCGIRequest
     const bool keep_connection;
     bool aborted;
     map<string,string> params;
+    string stdin_stream, data_stream;
+    bool stdin_eof, data_eof;
 
     FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc);
     ~FCGIRequest();
 
-    void read(string& buf);
-    void write(const string& buf);
-    void write(const void* buf, size_t cout);
+    enum ostream_type_t
+	{
+	STDOUT,
+	STDERR
+	};
+    void write(const string& buf, ostream_type_t stream = STDOUT);
+    void write(const void* buf, size_t cout, ostream_type_t stream = STDOUT);
 
     enum protocol_status_t
 	{
@@ -78,12 +84,7 @@ class FCGIRequest
 	OVERLOADED       = 2,
 	UNKNOWN_ROLE     = 3
 	};
-
     void end_request(u_int32_t appStatus, protocol_status_t protStatus);
-
-  protected:
-    friend class FCGIProtocolDriver;
-    string InputBuffer;
 
   private:
     FCGIProtocolDriver& driver;
@@ -120,14 +121,19 @@ class FCGIProtocolDriver
     OutputCallback& output_cb;
 
   private:
-    void process_begin_request(u_int16_t id, const u_int8_t* buf);
-    void process_abort_request(u_int16_t id);
+    typedef void (FCGIProtocolDriver::* proc_func_t)(u_int16_t, const u_int8_t*, u_int16_t);
+    static const proc_func_t proc_funcs[];
+
+    void process_begin_request(u_int16_t id, const u_int8_t* buf, u_int16_t len);
+    void process_abort_request(u_int16_t id, const u_int8_t* buf, u_int16_t len);
     void process_params(u_int16_t id, const u_int8_t* buf, u_int16_t len);
+    void process_stdin(u_int16_t id, const u_int8_t* buf, u_int16_t len);
     void process_unknown(u_int8_t type);
 
     typedef map<u_int16_t,FCGIRequest*> reqmap_t;
     reqmap_t reqmap;
     queue<u_int16_t> new_request_queue;
+
     basic_string<u_int8_t> InputBuffer;
     u_int8_t tmp_buf[64];
     };

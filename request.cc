@@ -10,7 +10,8 @@
 #include "internal.hpp"
 
 FCGIRequest::FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc)
-	: id(id_), role(role_), keep_connection(kc), aborted(false), driver(driver_)
+	: id(id_), role(role_), keep_connection(kc), aborted(false), stdin_eof(false),
+          data_eof(false), driver(driver_)
     {
     }
 
@@ -18,18 +19,12 @@ FCGIRequest::~FCGIRequest()
     {
     }
 
-void FCGIRequest::read(string& buf)
+void FCGIRequest::write(const string& buf, ostream_type_t stream)
     {
-    buf = InputBuffer;
-    InputBuffer.erase();
+    write(buf.data(), buf.size(), stream);
     }
 
-void FCGIRequest::write(const string& buf)
-    {
-    write(buf.data(), buf.size());
-    }
-
-void FCGIRequest::write(const void* buf, size_t count)
+void FCGIRequest::write(const void* buf, size_t count, ostream_type_t stream)
     {
     if (count > 0xffff)
 	throw out_of_range("Can't send messages of that size.");
@@ -38,7 +33,10 @@ void FCGIRequest::write(const void* buf, size_t count)
 
     // Construct message.
 
-    new(tmp_buf) Header(TYPE_STDOUT, id, count);
+    if (stream == STDOUT)
+	new(tmp_buf) Header(TYPE_STDOUT, id, count);
+    else
+	new(tmp_buf) Header(TYPE_STDERR, id, count);
     driver.output_cb(tmp_buf, sizeof(Header));
     driver.output_cb(buf, count);
     }

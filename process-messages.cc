@@ -9,7 +9,7 @@
 
 #include "internal.hpp"
 
-void FCGIProtocolDriver::process_begin_request(u_int16_t id, const u_int8_t* buf)
+void FCGIProtocolDriver::process_begin_request(u_int16_t id, const u_int8_t* buf, u_int16_t)
     {
     // Check whether we have an open request with that id already and
     // if, throw an exception.
@@ -30,7 +30,7 @@ void FCGIProtocolDriver::process_begin_request(u_int16_t id, const u_int8_t* buf
 				 (br->flags & FLAG_KEEP_CONN) == 1);
     }
 
-void FCGIProtocolDriver::process_abort_request(u_int16_t id)
+void FCGIProtocolDriver::process_abort_request(u_int16_t id, const u_int8_t*, u_int16_t)
     {
     // Find request instance for this id. Ignore message if non
     // exists, set ignore flag otherwise.

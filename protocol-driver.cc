@@ -9,6 +9,22 @@
 
 #include "internal.hpp"
 
+const FCGIProtocolDriver::proc_func_t FCGIProtocolDriver::proc_funcs[] =
+    {
+    0,				                // unused
+    &FCGIProtocolDriver::process_begin_request,	// TYPE_BEGIN_REQUEST
+    &FCGIProtocolDriver::process_abort_request,	// TYPE_ABORT_REQUEST
+    0,				                // TYPE_END_REQUEST
+    &FCGIProtocolDriver::process_params,	// TYPE_PARAMS
+    &FCGIProtocolDriver::process_stdin,		// TYPE_STDIN
+    0,				                // TYPE_STDOUT
+    0,				                // TYPE_STDERR
+    0,				                // TYPE_DATA
+    0,				                // TYPE_GET_VALUES
+    0,				                // TYPE_GET_VALUES_RESULT
+    0,				                // TYPE_UNKNOWN
+    };
+
 FCGIProtocolDriver::FCGIProtocolDriver(OutputCallback& cb) : output_cb(cb)
     {
     }
@@ -53,45 +69,20 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 	if (InputBuffer.size() < sizeof(Header)+msg_len+hp->paddingLength)
 	    return;
 
-	// Process the message.
+	// Process the message. That involves a lookup in the
+	// proc_funcs array, using the message type as index. Then the
+	// function is called.
 
-	try {
-	    if (msg_id == 0)	// Admin message.
-		{
-		switch(hp->type)
-		    {
-		    case TYPE_GET_VALUES:
-			cerr << "Received message type TYPE_GET_VALUES, len " << msg_len << "." << endl;
-			break;
-		    default:
-			process_unknown(hp->type);
-		    }
-		}
-	    else		// Normal requests.
-		{
-		switch(hp->type)
-		    {
-		    case TYPE_BEGIN_REQUEST:
-			process_begin_request(msg_id, InputBuffer.data()+sizeof(Header));
-			break;
-		    case TYPE_ABORT_REQUEST:
-			process_abort_request(msg_id);
-			break;
-		    case TYPE_PARAMS:
-			process_params(msg_id, InputBuffer.data()+sizeof(Header), msg_len);
-			break;
-		    case TYPE_STDIN:
-			cerr << "Received message type TYPE_STDIN, len " << msg_len << "." << endl;
-			break;
-		    case TYPE_DATA:
-			cerr << "Received message type TYPE_DATA, len " << msg_len << "." << endl;
-			break;
-		    default:
-			char buf[256];
-			sprintf(buf, "FCGIProtocolDriver received unknown request type %u.", hp->type);
-			throw unknown_fcgi_request(buf);
-		    }
-		}
+	try
+	    {
+	    cerr << "Received message: id = " << msg_id << ", "
+		 << "body len = " << msg_len << ", "
+		 << "type = " << (int)hp->type << endl;
+
+	    if (hp->type > TYPE_UNKNOWN || proc_funcs[hp->type] == 0)
+		process_unknown(hp->type);
+	    else
+		(this->*proc_funcs[hp->type])(msg_id, InputBuffer.data()+sizeof(Header), msg_len);
 
 	    // Remove message from input buffer.
 

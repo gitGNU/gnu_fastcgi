@@ -7,10 +7,32 @@
  * All rights reserved.
  */
 
-// #include "internal.hpp"
-//
-// void FCGIProtocolDriver::process_unknown(u_int8_t type)
-//      {
-//      new(tmp_buf) UnknownTypeMsg(type);
-//      output_cb(tmp_buf, sizeof(UnknownTypeMsg));
-//      }
+#include "internal.hpp"
+
+void FCGIProtocolDriver::process_stdin(u_int16_t id, const u_int8_t* buf, u_int16_t len)
+    {
+    // Find request instance for this id. Ignore message if non
+    // exists.
+
+    reqmap_t::iterator req = reqmap.find(id);
+    if (req == reqmap.end())
+	{
+	cerr << "FCGIProtocolDriver received STDIN for non-existing id " << id << ". Ignoring."
+	     << endl;
+	return;
+	}
+
+    // Is this the last message to come? Then set the eof flag.
+
+    if (len == 0)
+	{
+	cerr << "Received last stdin message for request " << id << "." << endl;
+	req->second->stdin_eof = true;
+	return;
+	}
+
+    // Add data to stream.
+
+    cerr << "Received stdin message for request " << id << "." << endl;
+    req->second->stdin_stream.append((const char*)buf, len);
+    }
