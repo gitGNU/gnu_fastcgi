@@ -32,4 +32,4 @@ install:	test
 
 # Dependencies
 
-test.o:		fastcgi.hpp
+fcgi_error.o protocol_driver.o request.o test.o:	fastcgi.hpp
