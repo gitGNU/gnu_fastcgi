@@ -46,7 +46,7 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
     // If there is enough data in the input buffer to contain a
     // header, interpret it.
 
-    while(InputBuffer.size() > sizeof(Header))
+    while(InputBuffer.size() >= sizeof(Header))
 	{
 	const Header* hp  = reinterpret_cast<const Header*>(InputBuffer.data());
 
