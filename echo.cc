@@ -1,7 +1,7 @@
 /*
  * $Source: /home/cvs/fastcgi-example/echo.cpp,v $
- * $Revision: 1.2 $
- * $Date: 2001/03/20 17:42:34 $
+ * $Revision: 1.3 $
+ * $Date: 2001/03/21 17:30:12 $
  *
  * Copyright (c) 2000 by Peter Simons <simons@ieee.org>.
  * All rights reserved.
@@ -32,25 +32,25 @@ class RequestHandler : public FCGIRequest::handler
 
 	if (req->role != FCGIRequest::RESPONDER)
 	    {
-	    req->write("We can't handle any role but RESPONDER.", FCGIRequest::STDERR);
+	    req->write("We can't handle any role but RESPONDER.", 39, FCGIRequest::STDERR);
 	    req->end_request(1, FCGIRequest::UNKNOWN_ROLE);
 	    return;
 	    }
 
 	// Print page with the environment details.
 
-	ostrstream os;
+	std::ostrstream os;
 	os << "Content-type: text/html\r\n"
 	   << "\r\n"
-	   << "<title>FastCGI Test Program</title>" << endl
-	   << "<h1 align=center>FastCGI Test Program</h1>" << endl
-	   << "<h3>FastCGI Status</h3>" << endl
-	   << "Test Program Compile Time = " << __DATE__ " " __TIME__ << "<br>" << endl
-	   << "Process id                = " << getpid() << "<br>" << endl
-	   << "Request id                = " << req->id << "<br>" << endl
-	   << "<h3>Request Environment</h3>" << endl;
-	for (map<string,string>::const_iterator i = req->params.begin(); i != req->params.end(); ++i)
-	    os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << endl;
+	   << "<title>FastCGI Test Program</title>" << std::endl
+	   << "<h1 align=center>FastCGI Test Program</h1>" << std::endl
+	   << "<h3>FastCGI Status</h3>" << std::endl
+	   << "Test Program Compile Time = " << __DATE__ " " __TIME__ << "<br>" << std::endl
+	   << "Process id                = " << getpid() << "<br>" << std::endl
+	   << "Request id                = " << req->id << "<br>" << std::endl
+	   << "<h3>Request Environment</h3>" << std::endl;
+	for (std::map<std::string,std::string>::const_iterator i = req->params.begin(); i != req->params.end(); ++i)
+	    os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << std::endl;
 	os << "<h3>Input Stream</h3>\n"
 	   << "<pre>\n";
 	req->write(os.str(), os.pcount());
@@ -65,7 +65,7 @@ class RequestHandler : public FCGIRequest::handler
 
 	req->write("</pre>\n");
 	req->write("<h1 align=center>End of Request</h1>\n");
-	cerr << "Request #" << req->id << " handled successfully." << endl;
+	std::cerr << "Request #" << req->id << " handled successfully." << std::endl;
 	req->end_request(0, FCGIRequest::REQUEST_COMPLETE);
 	}
     };
@@ -80,7 +80,7 @@ try
     rlim.rlim_cur = 8;
     rlim.rlim_max = 8;
     if (setrlimit(RLIMIT_NOFILE, &rlim) != 0)
-	throw runtime_error("setrlimit() failed.");
+	throw std::runtime_error("setrlimit() failed.");
 
     // Let's go.
 
@@ -89,17 +89,17 @@ try
     while(!sched.empty())
 	{
 	sched.schedule();
-	//sched.dump(cerr);
+	//sched.dump(std::cerr);
 	}
     return 0;
     }
-catch(const exception &e)
+catch(const std::exception &e)
     {
-    cerr << "Caught exception: " << e.what() << endl;
+    std::cerr << "Caught exception: " << e.what() << std::endl;
     return 1;
     }
 catch(...)
     {
-    cerr << "Caught unknown exception." << endl;
+    std::cerr << "Caught unknown exception." << std::endl;
     return 1;
     }

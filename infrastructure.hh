@@ -1,7 +1,7 @@
 /*
  * $Source: /home/cvs/fastcgi-example/infrastructure.hpp,v $
- * $Revision: 1.2 $
- * $Date: 2001/03/20 17:42:34 $
+ * $Revision: 1.3 $
+ * $Date: 2001/03/21 17:30:12 $
  *
  * Copyright (c) 2000 by Peter Simons <simons@ieee.org>.
  * All rights reserved.
@@ -44,19 +44,19 @@ class Listener : public scheduler::event_handler
 	if (socket >= 0)
 	    new T(mysched, socket);
 	else
-	    throw runtime_error(string("accept() failed: ") + strerror(errno));
+	    throw std::runtime_error(std::string("accept() failed: ") + strerror(errno));
 	}
     virtual void fd_is_writable(int)
 	{
-	throw logic_error("This routine should not be called.");
+	throw std::logic_error("This routine should not be called.");
 	}
     virtual void read_timeout(int)
 	{
-	throw logic_error("This routine should not be called.");
+	throw std::logic_error("This routine should not be called.");
 	}
     virtual void write_timeout(int)
 	{
-	throw logic_error("This routine should not be called.");
+	throw std::logic_error("This routine should not be called.");
 	}
 
     scheduler& mysched;
@@ -72,7 +72,7 @@ class ConnectionHandler : public scheduler::event_handler,
 	      driver(*this), terminate(false)
 	{
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) == -1)
-	    throw runtime_error(string("Can set non-blocking mode: ") + strerror(errno));
+	    throw std::runtime_error(std::string("Can set non-blocking mode: ") + strerror(errno));
 
 	properties.poll_events  = POLLIN;
 	properties.read_timeout = 0;
@@ -91,7 +91,7 @@ class ConnectionHandler : public scheduler::event_handler,
 	    {
 	    int rc = write(mysocket, buf, count);
 	    if (rc >= 0)
-		write_buffer.append(static_cast<char*>(buf)+rc, count-rc);
+		write_buffer.append(static_cast<const char*>(buf)+rc, count-rc);
 	    else if (errno != EINTR && errno != EAGAIN)
 		{
 		char tmp[1024];
@@ -100,10 +100,10 @@ class ConnectionHandler : public scheduler::event_handler,
 		throw fcgi_io_callback_error(tmp);
 		}
 	    else
-		write_buffer.append(static_cast<char*>(buf), count);
+		write_buffer.append(static_cast<const char*>(buf), count);
 	    }
 	else
-	    write_buffer.append(static_cast<char*>(buf), count);
+	    write_buffer.append(static_cast<const char*>(buf), count);
 
 	if (!write_buffer.empty() && is_write_handler_registered == false)
 	    {
@@ -131,24 +131,24 @@ class ConnectionHandler : public scheduler::event_handler,
 		    req->handler_cb->operator()(req);
 		    }
 		}
-	    catch(const exception& e)
+	    catch(const std::exception& e)
 		{
-		cerr << "Caught exception thrown in FCGIProtocolDriver: " << e.what() << endl
-		     << "Terminating connection " << mysocket << "." << endl;
+		std::cerr << "Caught exception thrown in FCGIProtocolDriver: " << e.what() << std::endl
+			  << "Terminating connection " << mysocket << "." << std::endl;
 		delete this;
 		return;
 		}
 	    catch(...)
 		{
-		cerr << "Caught unknown exception in FCGIProtocolDriver; terminating connection "
-		     << mysocket << "." << endl;
+		std::cerr << "Caught unknown exception in FCGIProtocolDriver; terminating connection "
+			  << mysocket << "." << std::endl;
 		delete this;
 		return;
 		}
 	    }
 	else if (rc <= 0 && errno != EINTR && errno != EAGAIN)
 	    {
-	    cerr << "An error occured while reading from fd " << mysocket << ": " << strerror(errno) << endl;
+	    std::cerr << "An error occured while reading from fd " << mysocket << ": " << strerror(errno) << std::endl;
 	    delete this;
 	    return;
 	    }
@@ -169,7 +169,7 @@ class ConnectionHandler : public scheduler::event_handler,
 		write_buffer.erase(0, rc);
 	    else if (rc < 0 && errno != EINTR && errno != EAGAIN)
 		{
-		cerr << "An error occured while writing to fd " << mysocket << ": " << strerror(errno) << endl;
+		std::cerr << "An error occured while writing to fd " << mysocket << ": " << strerror(errno) << std::endl;
 		delete this;
 		return;
 		}
@@ -178,11 +178,11 @@ class ConnectionHandler : public scheduler::event_handler,
 	}
     virtual void read_timeout(int)
 	{
-	throw logic_error("Not implemented yet.");
+	throw std::logic_error("Not implemented yet.");
 	}
     virtual void write_timeout(int)
 	{
-	throw logic_error("Not implemented yet.");
+	throw std::logic_error("Not implemented yet.");
 	}
     void terminate_if_we_shall()
 	{
@@ -195,7 +195,7 @@ class ConnectionHandler : public scheduler::event_handler,
     int mysocket;
     bool is_write_handler_registered;
     FCGIProtocolDriver driver;
-    string write_buffer;
+    std::string write_buffer;
     bool terminate;
     };
 
