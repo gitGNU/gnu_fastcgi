@@ -84,6 +84,10 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 	    else
 		(this->*proc_funcs[hp->type])(msg_id, InputBuffer.data()+sizeof(Header), msg_len);
 	    }
+	catch(const fcgi_io_callback_error&)
+	    {
+	    throw;
+	    }
 	catch(const exception& e)
 	    {
 	    cerr << "Caught exception while processing request #" << msg_id << ": " << e.what() << endl;

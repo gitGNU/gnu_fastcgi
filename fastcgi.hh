@@ -46,6 +46,11 @@ struct unknown_fcgi_request : public fcgi_error
     unknown_fcgi_request(const string& w) : fcgi_error(w) { }
     };
 
+struct fcgi_io_callback_error : public fcgi_error
+    {
+    fcgi_io_callback_error(const string& w) : fcgi_error(w) { }
+    };
+
 // The class representing a request.
 
 class FCGIRequest
