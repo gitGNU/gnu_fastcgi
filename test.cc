@@ -101,8 +101,9 @@ try {
 	   << "<title>FastCGI Test Program</title>" << endl
 	   << "<h1 align=center>FastCGI Test Program</h1>" << endl
 	   << "<h3>FastCGI Status</h3>" << endl
-	   << "Process id = " << getpid() << "<br>" << endl
-	   << "Request id = " << req->id << endl
+	   << "Process id     = " << getpid() << "<br>" << endl
+	   << "Request id     = " << req->id << "<br>" << endl
+	   << "Request socket = " << socket << "<br>" << endl
 	   << "<h3>Request Environment</h3>" << endl;
 
 	for (map<string,string>::const_iterator i = req->params.begin(); i != req->params.end(); ++i)
