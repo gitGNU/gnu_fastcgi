@@ -67,9 +67,17 @@ try {
 	if (rc < 0)
 	    throw runtime_error("read() failed.");
 	driver.process_input(buf, rc);
-	FCGIProtocolDriver::FCGIRequest* req = driver.get_request();
+	FCGIRequest* req = driver.get_request();
 	if (req->keep_connection)
 	    throw runtime_error("Test program can't handle KEEP_CONNECTION.");
+	if (req->role != FCGIProtocolDriver::ROLE_RESPONDER)
+	    throw runtime_error("Test program can't handle any role but RESPONDER.");
+
+	req->write("Content-type: text/html\r\n" \
+		   "\r\n"
+		   "<title>FastCGI echo</title>"
+		   "<h1>FastCGI echo</h1>\n");
+	req->end_request(0, FCGIProtocolDriver::REQUEST_COMPLETE);
 	}
 
     // done

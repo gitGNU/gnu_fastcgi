@@ -8,7 +8,7 @@ CPPFLAGS	=
 CXXFLAGS	= -Wall
 LDFLAGS		=
 
-OBJS		=
+OBJS		= protocol_driver.o request.o fcgi_error.o
 
 .cpp.o:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
