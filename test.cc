@@ -132,6 +132,9 @@ try {
 		req->stdin_stream.erase();
 		}
 	    }
+#else
+	req->write(req->stdin_stream);
+	req->stdin_stream.erase();
 #endif
 	req->write("</pre>\n");
 
