@@ -5,8 +5,10 @@ AR		= ar
 RANLIB		= ranlib
 
 CPPFLAGS	=
-CXXFLAGS	= -O3 -Wall -pipe
+CXXFLAGS	= -pipe -Wall -pedantic -O3
 LDFLAGS		= -s
+
+.PHONY:		all clean
 
 OBJS		= fcgi-error.o process-admin-messages.o process-messages.o \
 		  process-stream-messages.o protocol-driver.o request.o
