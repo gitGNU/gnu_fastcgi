@@ -34,6 +34,8 @@ void FCGIRequest::write(const void* buf, size_t count)
     {
     if (count > 0xffff)
 	throw out_of_range("Can't send messages of that size.");
+    else if (count == 0)
+	return;
 
     // Construct message.
 
