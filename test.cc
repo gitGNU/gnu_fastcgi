@@ -118,7 +118,6 @@ try {
 
 	req->write("<h3>Input Stream</h3>\n" \
 		   "<pre>\n");
-#if 0
 	while(req->stdin_eof == false)
 	    {
 	    char buf[4*1024];
@@ -126,16 +125,12 @@ try {
 	    if (rc < 0)
 		throw runtime_error("read() failed.");
 	    driver.process_input(buf, rc);
-	    if (req->stdin_stream.empty() == false)
-		{
-		req->write(req->stdin_stream);
-		req->stdin_stream.erase();
-		}
 	    }
-#else
-	req->write(req->stdin_stream);
-	req->stdin_stream.erase();
-#endif
+	if (req->stdin_stream.empty() == false)
+	    {
+	    req->write(req->stdin_stream);
+	    req->stdin_stream.erase();
+	    }
 	req->write("</pre>\n");
 
 	// Terminate the request.
