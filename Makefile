@@ -8,7 +8,8 @@ CPPFLAGS	=
 CXXFLAGS	= -Wall
 LDFLAGS		=
 
-OBJS		= protocol_driver.o request.o fcgi_error.o
+OBJS		= protocol_driver.o process_messages.o process_admin_messages.o \
+		  process_stream_messages.o request.o fcgi_error.o
 
 .cpp.o:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
@@ -32,5 +33,9 @@ install:	test
 
 # Dependencies
 
-fcgi_error.o protocol_driver.o request.o test.o:	fastcgi.hpp
-protocol_driver.o request.o: 				internal.hpp
+fcgi_error.o: fastcgi.hpp
+process_admin_messages.o: internal.hpp fastcgi.hpp
+process_messages.o: internal.hpp fastcgi.hpp
+protocol_driver.o: internal.hpp fastcgi.hpp
+request.o: internal.hpp fastcgi.hpp
+test.o: fastcgi.hpp

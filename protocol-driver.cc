@@ -56,127 +56,45 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 	// Process the message.
 
 	try {
-	    if (msg_id == 0)
+	    if (msg_id == 0)	// Admin message.
 		{
-		// Handle management messages.
-
 		switch(hp->type)
 		    {
 		    case TYPE_GET_VALUES:
 			cerr << "Received message type TYPE_GET_VALUES, len " << msg_len << "." << endl;
 			break;
-
 		    default:
-			{
-			new(tmp_buf) UnknownTypeMsg(hp->type);
-			output_cb(tmp_buf, sizeof(UnknownTypeMsg));
-			}
+			process_unknown(hp->type);
 		    }
-
-		goto processed;
 		}
-
-	    // Handle normal requests.
-
-	    reqmap_t::iterator req;
-	    switch(hp->type)
+	    else		// Normal requests.
 		{
-		case TYPE_BEGIN_REQUEST:
-		    // Create a new request instance and put it into
-		    // the queue so that the user may get it.
-
-		    if (reqmap.find(msg_id) != reqmap.end())
-			{
+		switch(hp->type)
+		    {
+		    case TYPE_BEGIN_REQUEST:
+			process_begin_request(msg_id, InputBuffer.data()+sizeof(Header));
+			break;
+		    case TYPE_ABORT_REQUEST:
+			process_abort_request(msg_id);
+			break;
+		    case TYPE_PARAMS:
+			process_params(msg_id, InputBuffer.data()+sizeof(Header), msg_len);
+			break;
+		    case TYPE_STDIN:
+			cerr << "Received message type TYPE_STDIN, len " << msg_len << "." << endl;
+			break;
+		    case TYPE_DATA:
+			cerr << "Received message type TYPE_DATA, len " << msg_len << "." << endl;
+			break;
+		    default:
 			char buf[256];
-			sprintf(buf, "FCGIProtocolDriver received BEGIN_REQUEST id %u, which " \
-				"exists already.", hp->type);
-			throw duplicate_begin_request(buf);
-			}
-		    else
-			{
-			const BeginRequest* br =
-			    reinterpret_cast<const BeginRequest*>(InputBuffer.data()+sizeof(Header));
-			reqmap[msg_id] = new FCGIRequest(*this,
-							 msg_id,
-							 FCGIRequest::role_t((br->roleB1 << 8) + br->roleB0),
-							 (br->flags & FLAG_KEEP_CONN) == 1);
-			new_request_queue.push(msg_id);
-			}
-		    break;
-
-		case TYPE_ABORT_REQUEST:
-		    // Find the request in the reqmap and set the
-		    // abort flag.
-
-		    req = reqmap.find(msg_id);
-		    if (req != reqmap.end())
-			{
-			const_cast<bool&>(req->second->aborted) = true;
-			}
-		    else
-			cerr << "FCGIProtocolDriver received ABORT_REQUEST for id "
-			     << msg_id << ", which does not exist. Ignoring."
-			     << endl;
-		    break;
-
-		case TYPE_PARAMS:
-		    // Find the request in the reqmap and set the
-		    // environment.
-
-		    req = reqmap.find(msg_id);
-		    if (req != reqmap.end())
-			{
-			// Is this the last message to come? Then
-			// set the have_all_params flag in the
-			// request object.
-
-			if (msg_len == 0)
-			    {
-			    const_cast<bool&>(req->second->have_all_params) = true;
-			    break;
-			    }
-			// Process message.
-
-			const u_int8_t* p = InputBuffer.data()+sizeof(Header);
-			u_int32_t  name_len, data_len;
-			string     name, data;
-			if (*p >> 7 == 0)
-			    name_len = *(p++);
-			else
-			    {
-			    name_len = ((p[0] & 0x7F) << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
-			    p += 4;
-			    }
-			if (*p >> 7 == 0)
-			    data_len = *(p++);
-			else
-			    {
-			    data_len = ((p[0] & 0x7F) << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
-			    p += 4;
-			    }
-			name.assign(reinterpret_cast<const char*>(p), name_len);
-			data.assign(reinterpret_cast<const char*>(p)+name_len, data_len);
-			req->second->params[name] = data;
-			}
-		    else
-			cerr << "FCGIProtocolDriver received PARAMS for id "
-			     << msg_id << ", which does not exist. Ignoring."
-			     << endl;
-		    break;
-
-		case TYPE_STDIN:
-		    cerr << "Received message type TYPE_STDIN, len " << msg_len << "." << endl;
-		    break;
-		case TYPE_DATA:
-		    cerr << "Received message type TYPE_DATA, len " << msg_len << "." << endl;
-		    break;
-		default:
-		    char buf[256];
-		    sprintf(buf, "FCGIProtocolDriver received unknown request type %u.", hp->type);
-		    throw unknown_fcgi_request(buf);
+			sprintf(buf, "FCGIProtocolDriver received unknown request type %u.", hp->type);
+			throw unknown_fcgi_request(buf);
+		    }
 		}
 
-      processed:
+	    // Remove message from input buffer.
+
 	    InputBuffer.erase(0, sizeof(Header)+msg_len+hp->paddingLength);
 	    }
 	catch(...)

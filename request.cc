@@ -10,8 +10,7 @@
 #include "internal.hpp"
 
 FCGIRequest::FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc)
-	: id(id_), role(role_), keep_connection(kc), have_all_params(false),
-          aborted(false), driver(driver_)
+	: id(id_), role(role_), keep_connection(kc), aborted(false), driver(driver_)
     {
     }
 

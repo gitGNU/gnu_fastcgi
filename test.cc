@@ -72,7 +72,7 @@ try {
 	    if (req == 0)
 		req = driver.get_request();
 	    }
-	while (req == 0 || req->have_all_params == false);
+	while (req == 0);
 
 	// Make sure we don't get a keep-connection request.
 

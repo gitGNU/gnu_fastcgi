@@ -61,8 +61,7 @@ class FCGIRequest
     const u_int16_t id;
     const role_t role;
     const bool keep_connection;
-    const bool have_all_params;
-    const bool aborted;
+    bool aborted;
     map<string,string> params;
 
     FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc);
@@ -121,6 +120,11 @@ class FCGIProtocolDriver
     OutputCallback& output_cb;
 
   private:
+    void process_begin_request(u_int16_t id, const u_int8_t* buf);
+    void process_abort_request(u_int16_t id);
+    void process_params(u_int16_t id, const u_int8_t* buf, u_int16_t len);
+    void process_unknown(u_int8_t type);
+
     typedef map<u_int16_t,FCGIRequest*> reqmap_t;
     reqmap_t reqmap;
     queue<u_int16_t> new_request_queue;
