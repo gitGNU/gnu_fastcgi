@@ -2,7 +2,7 @@
 
 CXX		= g++
 INSTALL		= install
-APACHECTL	= apachectl
+APACHECTL	= /usr/local/apache/bin/apachectl
 
 CPPFLAGS	=
 CXXFLAGS	= -pipe -Wall -pedantic -O3
@@ -30,7 +30,7 @@ echo:		$(OBJS)
 
 install:	echo
 	$(INSTALL) -c echo /usr/local/apache/fcgi-bin/
-	$(APACHECTL) graceful
+	su -c "$(APACHECTL) graceful"
 
 clean:
 	@rm -f echo $(OBJS)
