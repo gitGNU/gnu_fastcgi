@@ -26,13 +26,12 @@ class OutputCallback : public FCGIProtocolDriver::OutputCallback
 	{
 	close(fd);
 	}
-    virtual ssize_t operator() (const void* buf, size_t count)
+    virtual void operator() (const void* buf, size_t count)
 	{
 	ssize_t rc;
 	rc = write(fd, buf, count);
 	if (rc < 0)
 	    throw runtime_error("write() failed");
-	return rc;
 	}
 
   private:
