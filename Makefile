@@ -1,6 +1,9 @@
 # Build the fastcgi example program.
 
 CXX		= g++
+INSTALL		= install
+APACHECTL	= apachectl
+
 CPPFLAGS	=
 CXXFLAGS	= -pipe -Wall -pedantic -O3
 LDFLAGS		= -s
@@ -13,7 +16,7 @@ OBJS		= echo.o				\
 		  libfastcgi/protocol-driver.o 		\
 		  libfastcgi/request.o
 
-.PHONY:		all echo clean
+.PHONY:		all echo clean install
 .SUFFIXES:
 .SUFFIXES:	.o .cc
 
@@ -24,6 +27,10 @@ all:		echo
 
 echo:		$(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $(OBJS)
+
+install:	echo
+	$(INSTALL) -c echo /usr/local/apache/fcgi-bin/
+	$(APACHECTL) graceful
 
 clean:
 	@rm -f echo $(OBJS)
