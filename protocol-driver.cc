@@ -69,29 +69,35 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 	if (InputBuffer.size() < sizeof(Header)+msg_len+hp->paddingLength)
 	    return;
 
-	// Process the message. That involves a lookup in the
-	// proc_funcs array, using the message type as index. Then the
-	// function is called. Use a sentry to make sure the message
-	// is removed from the buffer in case of on exception.
+	// Process the message. In case an exception arrives here,
+	// terminate the request.
 
-	class sentry
+	try
 	    {
-	    basic_string<u_int8_t>& buf;
-	    size_t count;
-	  public:
-	    sentry(basic_string<u_int8_t>& b, size_t c) : buf(b), count(c) { }
-	    ~sentry() { buf.erase(0, count); }
+	    cerr << "Received message: id = " << msg_id << ", "
+		 << "body len = " << msg_len << ", "
+		 << "type = " << (int)hp->type << endl;
+
+	    if (hp->type > TYPE_UNKNOWN || proc_funcs[hp->type] == 0)
+		process_unknown(hp->type);
+	    else
+		(this->*proc_funcs[hp->type])(msg_id, InputBuffer.data()+sizeof(Header), msg_len);
 	    }
-	s(InputBuffer, sizeof(Header)+msg_len+hp->paddingLength);
+	catch(const exception& e)
+	    {
+	    cerr << "Caught exception while processing request #" << msg_id << ": " << e.what() << endl;
+	    terminate_request(msg_id);
+	    }
+	catch(...)
+	    {
+	    cerr << "Caught unknown exception while processing request #" << msg_id << "." << endl;
+	    terminate_request(msg_id);
+	    }
 
-	cerr << "Received message: id = " << msg_id << ", "
-	     << "body len = " << msg_len << ", "
-	     << "type = " << (int)hp->type << endl;
+	// Remove the message from our buffer and contine processing
+	// if there if something left.
 
-	if (hp->type > TYPE_UNKNOWN || proc_funcs[hp->type] == 0)
-	    process_unknown(hp->type);
-	else
-	    (this->*proc_funcs[hp->type])(msg_id, InputBuffer.data()+sizeof(Header), msg_len);
+	InputBuffer.erase(0, sizeof(Header)+msg_len+hp->paddingLength);
 	}
     }
 
