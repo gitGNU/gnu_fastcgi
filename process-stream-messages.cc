@@ -26,13 +26,11 @@ void FCGIProtocolDriver::process_stdin(u_int16_t id, const u_int8_t* buf, u_int1
 
     if (len == 0)
 	{
-	cerr << "Received last stdin message for request " << id << "." << endl;
 	req->second->stdin_eof = true;
 	return;
 	}
 
     // Add data to stream.
 
-    cerr << "Received stdin message for request " << id << "." << endl;
     req->second->stdin_stream.append((const char*)buf, len);
     }
