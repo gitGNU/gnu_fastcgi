@@ -103,6 +103,7 @@ class FCGIProtocolDriver
 
   protected:
     friend FCGIRequest;
+    void terminate_request(u_int16_t id);
     OutputCallback& output_cb;
 
   private:

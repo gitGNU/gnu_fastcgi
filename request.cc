@@ -66,4 +66,5 @@ void FCGIRequest::end_request(u_int32_t appStatus, u_int8_t protStatus)
 	{ 0, 0, 0 }
 	};
     driver.output_cb(&msg, sizeof(msg));
+    driver.terminate_request(id);
     }

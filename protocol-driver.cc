@@ -15,6 +15,10 @@ FCGIProtocolDriver::FCGIProtocolDriver(OutputCallback& cb) : output_cb(cb)
 
 FCGIProtocolDriver::~FCGIProtocolDriver()
     {
+    for(reqmap_t::iterator i = reqmap.begin(); i != reqmap.end(); ++i)
+	{
+	delete i->second;
+	}
     }
 
 void FCGIProtocolDriver::process_input(const void* buf, size_t count)
@@ -181,6 +185,17 @@ FCGIRequest* FCGIProtocolDriver::get_request(void)
     FCGIRequest* r = reqmap[new_request_queue.front()];
     new_request_queue.pop();
     return r;
+    }
+
+void FCGIProtocolDriver::terminate_request(u_int16_t id)
+    {
+    reqmap_t::iterator req;
+    req = reqmap.find(id);
+    if (req != reqmap.end())
+	{
+	delete req->second;
+	reqmap.erase(req);
+	}
     }
 
 // Pure virtual member functions must exist nonetheless.
