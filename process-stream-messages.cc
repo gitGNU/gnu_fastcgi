@@ -17,8 +17,8 @@ void FCGIProtocolDriver::process_stdin(u_int16_t id, const u_int8_t* buf, u_int1
     reqmap_t::iterator req = reqmap.find(id);
     if (req == reqmap.end())
 	{
-	cerr << "FCGIProtocolDriver received STDIN for non-existing id " << id << ". Ignoring."
-	     << endl;
+	std::cerr << "FCGIProtocolDriver received STDIN for non-existing id " << id << ". Ignoring."
+		  << std::endl;
 	return;
 	}
 

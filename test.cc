@@ -31,7 +31,7 @@ class OutputCallback : public FCGIProtocolDriver::OutputCallback
 	ssize_t rc;
 	rc = write(fd, buf, count);
 	if (rc < 0)
-	    throw runtime_error("write() failed");
+	    throw std::runtime_error("write() failed");
 	}
 
   private:
@@ -50,7 +50,7 @@ try {
 
 	socket = accept(0, &sa, &sa_len);
 	if (socket < 0)
-	    throw runtime_error("accept() failed.");
+	    throw std::runtime_error("accept() failed.");
 
 	// Setup the FCGI protocol driver.
 
@@ -66,7 +66,7 @@ try {
 	    char buf[4*1024];
 	    ssize_t rc = read(socket, buf, sizeof(buf));
 	    if (rc < 0)
-		throw runtime_error("read() failed.");
+		throw std::runtime_error("read() failed.");
 	    driver.process_input(buf, rc);
 	    if (req == 0)
 		req = driver.get_request();
@@ -77,7 +77,7 @@ try {
 
 	if (req->keep_connection)
 	    {
-	    cerr << "Test program can't handle KEEP_CONNECTION." << endl;
+	    std::cerr << "Test program can't handle KEEP_CONNECTION." << std::endl;
 	    req->end_request(1, FCGIRequest::CANT_MPX_CONN);
 	    continue;
 	    }
@@ -86,29 +86,29 @@ try {
 
 	if (req->role != FCGIRequest::RESPONDER)
 	    {
-	    cerr << "Test program can't handle any role but RESPONDER." << endl;
+	    std::cerr << "Test program can't handle any role but RESPONDER." << std::endl;
 	    req->end_request(1, FCGIRequest::UNKNOWN_ROLE);
 	    continue;
 	    }
 
 	// Print page with the environment details.
 
-	cerr << argv[0] << "[" << getpid() << "]: Starting to handle request #" << req->id << "." << endl;
+	std::cerr << argv[0] << "[" << getpid() << "]: Starting to handle request #" << req->id << "." << std::endl;
 	++req_counter;
-	ostrstream os;
+	std::ostrstream os;
 	os << "Content-type: text/html\r\n"
 	   << "\r\n"
-	   << "<title>FastCGI Test Program</title>" << endl
-	   << "<h1 align=center>FastCGI Test Program</h1>" << endl
-	   << "<h3>FastCGI Status</h3>" << endl
-	   << "Test Program Compile Time = " << __DATE__ " " __TIME__ << "<br>" << endl
-	   << "Process id                = " << getpid() << "<br>" << endl
-	   << "Request socket            = " << socket << "<br>" << endl
-	   << "Request id                = " << req->id << "<br>" << endl
-	   << "Request number            = " << req_counter << "<br>" << endl
-	   << "<h3>Request Environment</h3>" << endl;
-	for (map<string,string>::const_iterator i = req->params.begin(); i != req->params.end(); ++i)
-	    os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << endl;
+	   << "<title>FastCGI Test Program</title>" << std::endl
+	   << "<h1 align=center>FastCGI Test Program</h1>" << std::endl
+	   << "<h3>FastCGI Status</h3>" << std::endl
+	   << "Test Program Compile Time = " << __DATE__ " " __TIME__ << "<br>" << std::endl
+	   << "Process id                = " << getpid() << "<br>" << std::endl
+	   << "Request socket            = " << socket << "<br>" << std::endl
+	   << "Request id                = " << req->id << "<br>" << std::endl
+	   << "Request number            = " << req_counter << "<br>" << std::endl
+	   << "<h3>Request Environment</h3>" << std::endl;
+	for (std::map<std::string,std::string>::const_iterator i = req->params.begin(); i != req->params.end(); ++i)
+	    os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << std::endl;
 	req->write(os.str(), os.pcount());
 	os.freeze(0);
 
@@ -122,7 +122,7 @@ try {
 	    char buf[4*1024];
 	    ssize_t rc = read(socket, buf, sizeof(buf));
 	    if (rc < 0)
-		throw runtime_error("read() failed.");
+		throw std::runtime_error("read() failed.");
 	    driver.process_input(buf, rc);
 	    }
 	if (req->stdin_stream.empty() == false)
@@ -134,22 +134,22 @@ try {
 
 	// Terminate the request.
 
-	cerr << argv[0] << "[" << getpid() << "]: Request #" << req->id << " handled successfully." << endl;
+	std::cerr << argv[0] << "[" << getpid() << "]: Request #" << req->id << " handled successfully." << std::endl;
 	req->end_request(0, FCGIRequest::REQUEST_COMPLETE);
 	}
 
     // done
 
-    cerr << "FastCGI test program terminating." << endl;
+    std::cerr << "FastCGI test program terminating." << std::endl;
     return 0;
     }
-catch(const exception &e)
+catch(const std::exception &e)
     {
-    cerr << "Caught exception: " << e.what() << endl;
+    std::cerr << "Caught exception: " << e.what() << std::endl;
     return 1;
     }
 catch(...)
     {
-    cerr << "Caught unknown exception." << endl;
+    std::cerr << "Caught unknown exception." << std::endl;
     return 1;
     }

@@ -37,8 +37,8 @@ void FCGIProtocolDriver::process_abort_request(u_int16_t id, const u_int8_t*, u_
 
     reqmap_t::iterator req = reqmap.find(id);
     if (req == reqmap.end())
-	cerr << "FCGIProtocolDriver received ABORT_REQUEST for non-existing id " << id << ". Ignoring."
-	     << endl;
+	std::cerr << "FCGIProtocolDriver received ABORT_REQUEST for non-existing id " << id << ". Ignoring."
+		  << std::endl;
     else
 	{
 	req->second->aborted = true;
@@ -55,8 +55,8 @@ void FCGIProtocolDriver::process_params(u_int16_t id, const u_int8_t* buf, u_int
     reqmap_t::iterator req = reqmap.find(id);
     if (req == reqmap.end())
 	{
-	cerr << "FCGIProtocolDriver received PARAMS for non-existing id " << id << ". Ignoring."
-	     << endl;
+	std::cerr << "FCGIProtocolDriver received PARAMS for non-existing id " << id << ". Ignoring."
+		  << std::endl;
 	return;
 	}
 
@@ -71,8 +71,8 @@ void FCGIProtocolDriver::process_params(u_int16_t id, const u_int8_t* buf, u_int
 
     // Process message.
 
-    u_int32_t  name_len, data_len;
-    string     name, data;
+    u_int32_t   name_len, data_len;
+    std::string name, data;
     if (*buf >> 7 == 0)
 	name_len = *(buf++);
     else

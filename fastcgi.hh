@@ -10,13 +10,13 @@
 #ifndef __FASTCGI_HPP__
 #define __FASTCGI_HPP__
 
-#include <cstdio>
-#include <unistd.h>
+#include <iostream>
 #include <map>
 #include <queue>
 #include <string>
 #include <stdexcept>
 #include <new>
+#include <unistd.h>
 
 // Forward declarations.
 
@@ -25,30 +25,30 @@ class FCGIRequest;
 
 // Exceptions we throw.
 
-struct fcgi_error : public runtime_error
+struct fcgi_error : public std::runtime_error
     {
-    fcgi_error(const string& w) : runtime_error(w) { }
-    virtual ~fcgi_error() = 0;
+    fcgi_error(const std::string& w) : runtime_error(w) { }
+    virtual ~fcgi_error() throw() = 0;
     };
 
 struct unsupported_fcgi_version : public fcgi_error
     {
-    unsupported_fcgi_version(const string& w) : fcgi_error(w) { }
+    unsupported_fcgi_version(const std::string& w) : fcgi_error(w) { }
     };
 
 struct duplicate_begin_request : public fcgi_error
     {
-    duplicate_begin_request(const string& w) : fcgi_error(w) { }
+    duplicate_begin_request(const std::string& w) : fcgi_error(w) { }
     };
 
 struct unknown_fcgi_request : public fcgi_error
     {
-    unknown_fcgi_request(const string& w) : fcgi_error(w) { }
+    unknown_fcgi_request(const std::string& w) : fcgi_error(w) { }
     };
 
 struct fcgi_io_callback_error : public fcgi_error
     {
-    fcgi_io_callback_error(const string& w) : fcgi_error(w) { }
+    fcgi_io_callback_error(const std::string& w) : fcgi_error(w) { }
     };
 
 // The class representing a request.
@@ -67,8 +67,8 @@ class FCGIRequest
     const role_t role;
     const bool keep_connection;
     bool aborted;
-    map<string,string> params;
-    string stdin_stream, data_stream;
+    std::map<std::string,std::string> params;
+    std::string stdin_stream, data_stream;
     bool stdin_eof, data_eof;
 
     FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc);
@@ -79,8 +79,8 @@ class FCGIRequest
 	STDOUT,
 	STDERR
 	};
-    void write(const string& buf, ostream_type_t stream = STDOUT);
-    void write(const void* buf, size_t cout, ostream_type_t stream = STDOUT);
+    void write(const std::string& buf, ostream_type_t stream = STDOUT);
+    void write(const char* buf, size_t count, ostream_type_t stream = STDOUT);
 
     enum protocol_status_t
 	{
@@ -129,7 +129,7 @@ class FCGIProtocolDriver
     FCGIProtocolDriver& operator= (const FCGIProtocolDriver&);
 
   protected:
-    friend FCGIRequest;
+    friend class FCGIRequest;
     void terminate_request(u_int16_t id);
     OutputCallback& output_cb;
 
@@ -143,11 +143,11 @@ class FCGIProtocolDriver
     void process_stdin(u_int16_t id, const u_int8_t* buf, u_int16_t len);
     void process_unknown(u_int8_t type);
 
-    typedef map<u_int16_t,FCGIRequest*> reqmap_t;
+    typedef std::map<u_int16_t,FCGIRequest*> reqmap_t;
     reqmap_t reqmap;
-    queue<u_int16_t> new_request_queue;
+    std::queue<u_int16_t> new_request_queue;
 
-    basic_string<u_int8_t> InputBuffer;
+    std::basic_string<u_int8_t> InputBuffer;
     u_int8_t tmp_buf[64];
     };
 

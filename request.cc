@@ -21,15 +21,15 @@ FCGIRequest::~FCGIRequest()
 	delete handler_cb;
     }
 
-void FCGIRequest::write(const string& buf, ostream_type_t stream)
+void FCGIRequest::write(const std::string& buf, ostream_type_t stream)
     {
     write(buf.data(), buf.size(), stream);
     }
 
-void FCGIRequest::write(const void* buf, size_t count, ostream_type_t stream)
+void FCGIRequest::write(const char* buf, size_t count, ostream_type_t stream)
     {
     if (count > 0xffff)
-	throw out_of_range("Can't send messages of that size.");
+	throw std::out_of_range("Can't send messages of that size.");
     else if (count == 0)
 	return;
 

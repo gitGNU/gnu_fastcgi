@@ -88,14 +88,14 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 	    {
 	    throw;
 	    }
-	catch(const exception& e)
+	catch(const std::exception& e)
 	    {
-	    cerr << "Caught exception while processing request #" << msg_id << ": " << e.what() << endl;
+	    std::cerr << "Caught exception while processing request #" << msg_id << ": " << e.what() << std::endl;
 	    terminate_request(msg_id);
 	    }
 	catch(...)
 	    {
-	    cerr << "Caught unknown exception while processing request #" << msg_id << "." << endl;
+	    std::cerr << "Caught unknown exception while processing request #" << msg_id << "." << std::endl;
 	    terminate_request(msg_id);
 	    }
 

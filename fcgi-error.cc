@@ -11,6 +11,6 @@
 
 // Even pure virtual member functions must exist for the linker.
 
-fcgi_error::~fcgi_error()
+fcgi_error::~fcgi_error() throw()
     {
     }
