@@ -14,7 +14,7 @@ OBJS		= protocol_driver.o process_messages.o process_admin_messages.o \
 .cpp.o:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
 
-all:		libfastcgi.a test
+all:		libfastcgi.a
 
 libfastcgi.a:	$(OBJS)
 	@rm -f $@
