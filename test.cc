@@ -6,7 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <strstream>
+#include <sstream>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -91,7 +91,7 @@ try {
 
 	std::cerr << argv[0] << "[" << getpid() << "]: Starting to handle request #" << req->id << "." << std::endl;
 	++req_counter;
-	std::ostrstream os;
+	std::ostringstream os;
 	os << "Content-type: text/html\r\n"
 	   << "\r\n"
 	   << "<title>FastCGI Test Program</title>" << std::endl
@@ -105,8 +105,7 @@ try {
 	   << "<h3>Request Environment</h3>" << std::endl;
 	for (std::map<std::string,std::string>::const_iterator i = req->params.begin(); i != req->params.end(); ++i)
 	    os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << std::endl;
-	req->write(os.str(), os.pcount());
-	os.freeze(0);
+	req->write(os.str().data(), os.str().size());
 
 	// Make sure we read the entire standard input stream, then
 	// echo it back.
