@@ -1,0 +1,217 @@
+ | From: Vinzenz Feenstra <evilissimo@web.de>
+ | Subject: libfastcgi usable with g++ 2.95 and g++ 3.x
+ |
+ | Hi,
+ |
+ | after I had some problems with linking libfastcgi with
+ | test.cc with diffrent g++ 3.x versions
+ | and compiling your library with 2.95
+ |
+ | I made some minor changes.
+ |
+ | [...]
+ |
+ | There was a method in std::char_traits<> which wasn't
+ | compatible with unsigned char. And this wasn't found by the
+ | linker. ( That is what I think).
+ |  I didn't thought about it anymore, because I can't use your
+ | lib ( Fast CGI is not Supported by the Server :/ ).
+ |
+ |  I tried it, and I was disappointed, because there was this
+ | problem, first I thought its only a version of ld which made
+ | the problem so I tried several versions.
+ |
+ | for 2.95 I had to rewrite some parts you've already noticed,
+ | I think. But it links without problems.
+ |
+ | for 3.x (I tried 3.2,3.3 and 3.4) there was always the same
+ | problem. The linker made problems. So I copied it from the
+ | STL headers and made it specialized.
+ |
+ | BR
+ |
+ | Vinzenz
+
+#
+# patch "fastcgi.hh"
+#  from [a7883a437d1d198c3493efd11e9f77c7101a70b3]
+#    to [0ed105539cac5956de0e822016e73cbc653377e8]
+#
+# patch "process-messages.cc"
+#  from [f3426ef5a5c3ce43f72f9c5ea2fb65ea02dbfa50]
+#    to [10d752259f8166c80f5aaa7ec6b6f5b1f45bff16]
+#
+# patch "protocol-driver.cc"
+#  from [14760615c405d754b2d92348aabd95c1c9a441e9]
+#    to [3d8d7f491e232618798dfdda1c017901b1edf3fe]
+#
+# patch "test.cc"
+#  from [f13eb2da0a5126f9e6c81c29bc7c9ffea693d93a]
+#    to [de91b660b14d680eac7746aff29dca4da335bd0f]
+#
+--- fastcgi.hh
++++ fastcgi.hh
+@@ -14,6 +14,72 @@
+ #include <new>
+ #include <unistd.h>
+
++#if __GNUC__ == 3
++    struct char_traits : public std::char_traits<unsigned char>
++    {
++      typedef unsigned char 		char_type;
++      typedef int 	        int_type;
++      typedef std::streampos 	pos_type;
++      typedef std::streamoff 	off_type;
++      typedef mbstate_t 	state_type;
++
++      static void
++      assign(char_type& __c1, const char_type& __c2)
++      { __c1 = __c2; }
++
++      static bool
++      eq(const char_type& __c1, const char_type& __c2)
++      { return __c1 == __c2; }
++
++      static bool
++      lt(const char_type& __c1, const char_type& __c2)
++      { return __c1 < __c2; }
++
++      static int
++      compare(const char_type* __s1, const char_type* __s2, size_t __n)
++      { return memcmp(__s1, __s2, __n); }
++
++      static size_t
++      length(const char_type* __s)
++      { return strlen(reinterpret_cast<const char*>(__s)); }
++
++      static const char_type*
++      find(const char_type* __s, size_t __n, const char_type& __a)
++      { return static_cast<const char_type*>(memchr(__s, __a, __n)); }
++
++      static char_type*
++      move(char_type* __s1, const char_type* __s2, size_t __n)
++      { return static_cast<char_type*>(memmove(__s1, __s2, __n)); }
++
++      static char_type*
++      copy(char_type* __s1, const char_type* __s2, size_t __n)
++      {  return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
++
++      static char_type*
++      assign(char_type* __s, size_t __n, char_type __a)
++      { return static_cast<char_type*>(memset(__s, __a, __n)); }
++
++      static char_type
++      to_char_type(const int_type& __c)
++      { return static_cast<char_type>(__c); }
++
++      static int_type
++      to_int_type(const char_type& __c)
++      { return static_cast<int_type>(static_cast<unsigned char>(__c)); }
++
++      static bool
++      eq_int_type(const int_type& __c1, const int_type& __c2)
++      { return __c1 == __c2; }
++
++      static int_type
++      eof() { return static_cast<int_type>(EOF); }
++
++      static int_type
++      not_eof(const int_type& __c)
++      { return (__c == eof()) ? 0 : __c; }
++  };
++#endif
++
+ // Forward declarations.
+
+ class FCGIProtocolDriver;
+@@ -143,7 +209,13 @@
+     reqmap_t reqmap;
+     std::queue<u_int16_t> new_request_queue;
+
++#if __GNUC__ == 3
++    std::basic_string<u_int8_t,char_traits> InputBuffer;
++#else
+     std::basic_string<u_int8_t> InputBuffer;
++#endif
++
++
+     u_int8_t tmp_buf[64];
+     };
+
+--- process-messages.cc
++++ process-messages.cc
+@@ -1,8 +1,8 @@
+ /*
+  * Copyright (c) 2001 by Peter Simons <simons@ieee.org>.
+  * All rights reserved.
+  */
+-
++#include <cstdio>
+ #include "internal.hh"
+
+ void FCGIProtocolDriver::process_begin_request(u_int16_t id, const u_int8_t* buf, u_int16_t)
+@@ -13,7 +13,7 @@
+     if (reqmap.find(id) != reqmap.end())
+ 	{
+ 	char tmp[256];
+-	sprintf(tmp, "FCGIProtocolDriver received duplicate BEGIN_REQUEST id %u.", id);
++	std::sprintf(tmp, "FCGIProtocolDriver received duplicate BEGIN_REQUEST id %u.", id);
+ 	throw duplicate_begin_request(tmp);
+ 	}
+
+--- protocol-driver.cc
++++ protocol-driver.cc
+@@ -51,7 +51,7 @@
+ 	if (hp->version != 1)
+ 	    {
+ 	    char buf[256];
+-	    sprintf(buf, "FCGIProtocolDriver cannot handle protocol version %u.", hp->version);
++	    std::sprintf(buf, "FCGIProtocolDriver cannot handle protocol version %u.", hp->version);
+ 	    throw unsupported_fcgi_version(buf);
+ 	    }
+
+--- test.cc
++++ test.cc
+@@ -6,8 +6,13 @@
+ #include <iostream>
+ #include <stdexcept>
+ #include <string>
+-#include <sstream>
+
++#if __GNUC__ == 3
++  #include <sstream>
++#else
++  #include <strstream>
++#endif
++
+ #include <sys/types.h>
+ #include <sys/socket.h>
+ #include "fastcgi.hh"
+@@ -91,7 +96,11 @@
+
+ 	std::cerr << argv[0] << "[" << getpid() << "]: Starting to handle request #" << req->id << "." << std::endl;
+ 	++req_counter;
+-	std::ostringstream os;
++#if __GNUC__ == 3
++        std::ostringstream os;
++#else
++        std::ostrstream os;
++#endif
+ 	os << "Content-type: text/html\r\n"
+ 	   << "\r\n"
+ 	   << "<title>FastCGI Test Program</title>" << std::endl
+@@ -104,9 +113,12 @@
+ 	   << "Request number            = " << req_counter << "<br>" << std::endl
+ 	   << "<h3>Request Environment</h3>" << std::endl;
+ 	for (std::map<std::string,std::string>::const_iterator i = req->params.begin(); i != req->params.end(); ++i)
+-	    os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << std::endl;
++      os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << std::endl;
++#if __GNUC__ == 3
+ 	req->write(os.str().data(), os.str().size());
+-
++#else
++    req->write(os.str(), strlen(os.str()));
++#endif
+ 	// Make sure we read the entire standard input stream, then
+ 	// echo it back.
+
