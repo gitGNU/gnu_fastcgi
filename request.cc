@@ -39,26 +39,23 @@ void FCGIRequest::write(const void* buf, size_t count)
 
     // Construct message.
 
-    Header h(TYPE_STDOUT, id, count);
-    driver.output_cb(&h, sizeof(h));
+    new(tmp_buf) Header(TYPE_STDOUT, id, count);
+    driver.output_cb(tmp_buf, sizeof(Header));
     driver.output_cb(buf, count);
     }
 
 void FCGIRequest::end_request(u_int32_t appStatus, FCGIRequest::protocol_status_t protStatus)
     {
-    // Terminate the stdout stream.
+    // Terminate the stdout and stderr stream, and send the
+    // end-request message.
 
-    Header h1(TYPE_STDOUT, id, 0);
-    driver.output_cb(&h1, sizeof(h1));
-
-    // Terminate the stderr stream.
-
-    Header h2(TYPE_STDERR, id, 0);
-    driver.output_cb(&h2, sizeof(h2));
-
-    // Send the end-request message.
-
-    EndRequestMsg msg(id, appStatus, protStatus);
-    driver.output_cb(&msg, sizeof(msg));
+    u_int8_t* p = tmp_buf;
+    new(p) Header(TYPE_STDOUT, id, 0);
+    p += sizeof(Header);
+    new(p) Header(TYPE_STDERR, id, 0);
+    p += sizeof(Header);
+    new(p) EndRequestMsg(id, appStatus, protStatus);
+    p += sizeof(EndRequestMsg);
+    driver.output_cb(tmp_buf, p-tmp_buf);
     driver.terminate_request(id);
     }

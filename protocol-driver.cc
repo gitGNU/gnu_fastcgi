@@ -68,8 +68,8 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 
 		    default:
 			{
-			UnknownTypeMsg msg(hp->type);
-			output_cb(&msg, sizeof(msg));
+			new(tmp_buf) UnknownTypeMsg(hp->type);
+			output_cb(tmp_buf, sizeof(UnknownTypeMsg));
 			}
 		    }
 
