@@ -164,6 +164,13 @@ class FCGIProtocolDriver
     static const u_int8_t CANT_MPX_CONN    = 1;
     static const u_int8_t OVERLOADED       = 2;
     static const u_int8_t UNKNOWN_ROLE     = 3;
+
+    struct UnknownTypeMsg
+	{
+	Header   header;
+	u_int8_t type;
+	u_int8_t reserved[7];
+        };
     };
 
 #endif // !defined(__FASTCGI_HPP__)
