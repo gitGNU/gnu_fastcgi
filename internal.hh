@@ -14,7 +14,7 @@
 
 namespace
     {
-    enum fcgi_type
+    enum message_type_t
 	{
 	TYPE_BEGIN_REQUEST     =  1,
 	TYPE_ABORT_REQUEST     =  2,
@@ -44,7 +44,7 @@ namespace
 	    {
 	    memset(this, 0, sizeof(*this));
 	    }
-	Header(fcgi_type t, u_int16_t id, u_int16_t len)
+	Header(message_type_t t, u_int16_t id, u_int16_t len)
 		: version(1), type(t),
 	          requestIdB1(id >> 8), requestIdB0(id & 0xff),
 	          contentLengthB1(len >> 8), contentLengthB0(len & 0xff),
