@@ -1,7 +1,7 @@
 /*
  * $Source: /home/cvs/fastcgi-example/echo.cpp,v $
- * $Revision: 1.1 $
- * $Date: 2001/03/20 17:38:49 $
+ * $Revision: 1.2 $
+ * $Date: 2001/03/20 17:42:34 $
  *
  * Copyright (c) 2000 by Peter Simons <simons@ieee.org>.
  * All rights reserved.
@@ -25,26 +25,17 @@ class RequestHandler : public FCGIRequest::handler
   private:
     virtual void operator()(FCGIRequest* req)
 	{
-	cerr << "Handling request #" << req->id << "." << endl;
+	if (!req->stdin_eof)
+	    return;
 
 	// Make sure we are a responder.
 
 	if (req->role != FCGIRequest::RESPONDER)
 	    {
-	    cerr << "Test program can't handle any role but RESPONDER." << endl;
+	    req->write("We can't handle any role but RESPONDER.", FCGIRequest::STDERR);
 	    req->end_request(1, FCGIRequest::UNKNOWN_ROLE);
 	    return;
 	    }
-
-	// Handle KEEP_CONNECTION.
-	//
-	//if (req->keep_connection)
-	//terminate_connection = false;
-
-	// Do we have everything we expected from STDIN?
-
-	if (!req->stdin_eof)
-	    return;
 
 	// Print page with the environment details.
 
@@ -60,20 +51,20 @@ class RequestHandler : public FCGIRequest::handler
 	   << "<h3>Request Environment</h3>" << endl;
 	for (map<string,string>::const_iterator i = req->params.begin(); i != req->params.end(); ++i)
 	    os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << endl;
+	os << "<h3>Input Stream</h3>\n"
+	   << "<pre>\n";
 	req->write(os.str(), os.pcount());
 	os.freeze(0);
 
-	// Make sure we read the entire standard input stream, then
-	// echo it back.
+	for (size_t i = 0; i < req->stdin_stream.size(); )
+	    {
+	    size_t count = ((req->stdin_stream.size() - i) > 0xffff) ? 0xffff : req->stdin_stream.size()-i;
+	    req->write(req->stdin_stream.data()+i, count);
+	    i += count;
+	    }
 
-	req->write("<h3>Input Stream</h3>\n" \
-		   "<pre>\n");
-	req->write(req->stdin_stream);
-	req->stdin_stream.erase();
 	req->write("</pre>\n");
-
-	// Terminate the request.
-
+	req->write("<h1 align=center>End of Request</h1>\n");
 	cerr << "Request #" << req->id << " handled successfully." << endl;
 	req->end_request(0, FCGIRequest::REQUEST_COMPLETE);
 	}

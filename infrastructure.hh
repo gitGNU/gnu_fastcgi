@@ -1,7 +1,7 @@
 /*
  * $Source: /home/cvs/fastcgi-example/infrastructure.hpp,v $
- * $Revision: 1.1 $
- * $Date: 2001/03/20 17:38:49 $
+ * $Revision: 1.2 $
+ * $Date: 2001/03/20 17:42:34 $
  *
  * Copyright (c) 2000 by Peter Simons <simons@ieee.org>.
  * All rights reserved.
@@ -10,6 +10,8 @@
 #ifndef __INFRASTRUCTURE_HPP__
 #define __INFRASTRUCTURE_HPP__
 
+#include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "libscheduler/scheduler.hpp"
@@ -69,14 +71,15 @@ class ConnectionHandler : public scheduler::event_handler,
 	    : mysched(sched), mysocket(sock), is_write_handler_registered(false),
 	      driver(*this), terminate(false)
 	{
-	cerr << "Creating new ConnectionHandler instance for socket " << mysocket << "." << endl;
+	if (fcntl(sock, F_SETFL, O_NONBLOCK) == -1)
+	    throw runtime_error(string("Can set non-blocking mode: ") + strerror(errno));
+
 	properties.poll_events  = POLLIN;
 	properties.read_timeout = 0;
 	mysched.register_handler(mysocket, *this, properties);
 	}
     ~ConnectionHandler()
 	{
-	cerr << "Destroying ConnectionHandler instance for socket " << mysocket << "." << endl;
 	mysched.remove_handler(mysocket);
 	close(mysocket);
 	}
@@ -84,28 +87,35 @@ class ConnectionHandler : public scheduler::event_handler,
   private:
     virtual void operator() (const void* buf, size_t count)
 	{
-	int rc = write(mysocket, buf, count);
-	if (rc < 0)
+	if (write_buffer.empty())
 	    {
-	    char tmp[128];
-	    snprintf(tmp, sizeof(tmp), "An error occured while writing to fd %d.", mysocket);
-	    throw fcgi_io_callback_error(tmp);
-	    }
-	else if (static_cast<size_t>(rc) < count)
-	    {
-	    write_buffer.append(static_cast<char*>(buf)+rc, count-rc);
-	    if (is_write_handler_registered == false)
+	    int rc = write(mysocket, buf, count);
+	    if (rc >= 0)
+		write_buffer.append(static_cast<char*>(buf)+rc, count-rc);
+	    else if (errno != EINTR && errno != EAGAIN)
 		{
-		properties.poll_events  = POLLIN | POLLOUT;
-		properties.write_timeout = 0;
-		mysched.register_handler(mysocket, *this, properties);
-		is_write_handler_registered = true;
+		char tmp[1024];
+		snprintf(tmp, sizeof(tmp), "An error occured while writing to fd %d: %s",
+			 mysocket, strerror(errno));
+		throw fcgi_io_callback_error(tmp);
 		}
+	    else
+		write_buffer.append(static_cast<char*>(buf), count);
+	    }
+	else
+	    write_buffer.append(static_cast<char*>(buf), count);
+
+	if (!write_buffer.empty() && is_write_handler_registered == false)
+	    {
+	    properties.poll_events   = POLLIN | POLLOUT;
+	    properties.write_timeout = 0;
+	    mysched.register_handler(mysocket, *this, properties);
+	    is_write_handler_registered = true;
 	    }
 	}
     virtual void fd_is_readable(int fd)
 	{
-	char tmp[1024];
+	char tmp[1024*10];
 	int rc = read(fd, tmp, sizeof(tmp));
 	if (rc > 0)
 	    {
@@ -123,22 +133,24 @@ class ConnectionHandler : public scheduler::event_handler,
 		}
 	    catch(const exception& e)
 		{
-		cerr << "Caught exception thrown in FCGIProtocolDriver: " << e.what() << endl;
-		cerr << "Terminating connection " << mysocket << "." << endl;
+		cerr << "Caught exception thrown in FCGIProtocolDriver: " << e.what() << endl
+		     << "Terminating connection " << mysocket << "." << endl;
 		delete this;
+		return;
 		}
 	    catch(...)
 		{
 		cerr << "Caught unknown exception in FCGIProtocolDriver; terminating connection "
 		     << mysocket << "." << endl;
 		delete this;
+		return;
 		}
 	    }
-	else if (rc <= 0)
+	else if (rc <= 0 && errno != EINTR && errno != EAGAIN)
 	    {
-	    cerr << "An error occured while reading from fd " << mysocket << "." << endl;
-	    mysched.remove_handler(mysocket);
+	    cerr << "An error occured while reading from fd " << mysocket << ": " << strerror(errno) << endl;
 	    delete this;
+	    return;
 	    }
 	terminate_if_we_shall();
 	}
@@ -155,11 +167,11 @@ class ConnectionHandler : public scheduler::event_handler,
 	    int rc = write(fd, write_buffer.data(), write_buffer.length());
 	    if (rc > 0)
 		write_buffer.erase(0, rc);
-	    else if (rc < 0)
+	    else if (rc < 0 && errno != EINTR && errno != EAGAIN)
 		{
-		cerr << "An error occured while writing to fd " << mysocket << "." << endl;
-		mysched.remove_handler(mysocket);
+		cerr << "An error occured while writing to fd " << mysocket << ": " << strerror(errno) << endl;
 		delete this;
+		return;
 		}
 	    }
 	terminate_if_we_shall();
