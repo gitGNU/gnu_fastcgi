@@ -51,7 +51,7 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 	u_int16_t msg_id  = (hp->requestIdB1 << 8) + hp->requestIdB0;
 
 	if (InputBuffer.size() < sizeof(Header)+msg_len+hp->paddingLength)
-	    break;
+	    return;
 
 	// Process the message.
 
