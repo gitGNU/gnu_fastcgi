@@ -5,7 +5,7 @@ AR		= ar
 RANLIB		= ranlib
 
 CPPFLAGS	=
-CXXFLAGS	= -Wall
+CXXFLAGS	= -Wall -pipe
 LDFLAGS		=
 
 OBJS		= protocol_driver.o process_messages.o process_admin_messages.o \
