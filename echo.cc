@@ -1,7 +1,7 @@
 /*
  * $Source: /home/cvs/fastcgi-example/echo.cc,v $
- * $Revision: 1.4 $
- * $Date: 2001/06/19 12:19:31 $
+ * $Revision: 1.5 $
+ * $Date: 2001/09/24 17:23:31 $
  *
  * Copyright (c) 2000 by Peter Simons <simons@ieee.org>.
  * All rights reserved.
@@ -9,7 +9,7 @@
 
 // ISO C++ header files.
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -39,7 +39,7 @@ class RequestHandler : public FCGIRequest::handler
 
 	// Print page with the environment details.
 
-	std::ostrstream os;
+	std::ostringstream os;
 	os << "Content-type: text/html\r\n"
 	   << "\r\n"
 	   << "<title>FastCGI Test Program</title>" << std::endl
@@ -53,8 +53,7 @@ class RequestHandler : public FCGIRequest::handler
 	    os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << std::endl;
 	os << "<h3>Input Stream</h3>\n"
 	   << "<pre>\n";
-	req->write(os.str(), os.pcount());
-	os.freeze(0);
+	req->write(os.str().c_str(), os.str().size());
 
 	for (size_t i = 0; i < req->stdin_stream.size(); )
 	    {
