@@ -1,7 +1,7 @@
 /*
- * $Source: /home/cvs/lib/libfastcgi/test.cpp,v $
- * $Revision: 1.10 $
- * $Date: 2000/08/29 10:15:59 $
+ * $Source: /home/cvs/fastcgi-example/infrastructure.hpp,v $
+ * $Revision: 1.1 $
+ * $Date: 2001/03/20 17:38:49 $
  *
  * Copyright (c) 2000 by Peter Simons <simons@ieee.org>.
  * All rights reserved.
@@ -117,7 +117,7 @@ class ConnectionHandler : public scheduler::event_handler,
 		    {
 		    if (req->keep_connection == false)
 			terminate = true;
-		    req->handler_cb = new T(this);
+		    req->handler_cb = new T;
 		    req->handler_cb->operator()(req);
 		    }
 		}
