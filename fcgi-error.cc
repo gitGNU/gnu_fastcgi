@@ -1,9 +1,5 @@
 /*
- * $Source$
- * $Revision$
- * $Date$
- *
- * Copyright (c) 2000 by Peter Simons <simons@ieee.org>.
+ * Copyright (c) 2001 by Peter Simons <simons@ieee.org>.
  * All rights reserved.
  */
 
