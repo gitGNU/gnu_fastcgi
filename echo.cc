@@ -1,7 +1,7 @@
 /*
- * $Source: /home/cvs/fastcgi-example/echo.cpp,v $
- * $Revision: 1.3 $
- * $Date: 2001/03/21 17:30:12 $
+ * $Source: /home/cvs/fastcgi-example/echo.cc,v $
+ * $Revision: 1.4 $
+ * $Date: 2001/06/19 12:19:31 $
  *
  * Copyright (c) 2000 by Peter Simons <simons@ieee.org>.
  * All rights reserved.
@@ -18,7 +18,7 @@
 #include <unistd.h>
 
 // Programm-internal stuff.
-#include "infrastructure.hpp"
+#include "infrastructure.hh"
 
 class RequestHandler : public FCGIRequest::handler
     {

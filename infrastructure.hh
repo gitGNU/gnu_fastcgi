@@ -1,7 +1,7 @@
 /*
- * $Source: /home/cvs/fastcgi-example/infrastructure.hpp,v $
- * $Revision: 1.3 $
- * $Date: 2001/03/21 17:30:12 $
+ * $Source: /home/cvs/fastcgi-example/infrastructure.hh,v $
+ * $Revision: 1.4 $
+ * $Date: 2001/06/19 12:19:31 $
  *
  * Copyright (c) 2000 by Peter Simons <simons@ieee.org>.
  * All rights reserved.
@@ -14,8 +14,8 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "libscheduler/scheduler.hpp"
-#include "libfastcgi/fastcgi.hpp"
+#include "libscheduler/scheduler.hh"
+#include "libfastcgi/fastcgi.hh"
 
 template<class T>
 class Listener : public scheduler::event_handler
@@ -55,6 +55,14 @@ class Listener : public scheduler::event_handler
 	throw std::logic_error("This routine should not be called.");
 	}
     virtual void write_timeout(int)
+	{
+	throw std::logic_error("This routine should not be called.");
+	}
+    virtual void error_condition(int)
+	{
+	throw std::logic_error("This routine should not be called.");
+	}
+    virtual void pollhup(int)
 	{
 	throw std::logic_error("This routine should not be called.");
 	}
@@ -181,6 +189,14 @@ class ConnectionHandler : public scheduler::event_handler,
 	throw std::logic_error("Not implemented yet.");
 	}
     virtual void write_timeout(int)
+	{
+	throw std::logic_error("Not implemented yet.");
+	}
+    virtual void error_condition(int)
+	{
+	throw std::logic_error("Not implemented yet.");
+	}
+    virtual void pollhup(int)
 	{
 	throw std::logic_error("Not implemented yet.");
 	}

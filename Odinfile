@@ -1,0 +1,8 @@
+# Build the fastcgi example program.
+
+echo == echo.cc +lib=(libfastcgi/libfastcgi.a) \
+                +lib=(libscheduler/libscheduler.a) \
+                :exe
+
+%clean ! == !<<
+    rm -f echo libfastcgi/libfastcgi.a libscheduler/libscheduler.a
