@@ -28,9 +28,6 @@ clean::
 	rm -f libfastcgi.a $(OBJS)
 	rm -f test test.o
 
-install:	test
-	install -s -c -o bin -g bin -m 755 test /usr/local/apache/fcgi-bin/test.fcgi
-
 # Dependencies
 
 fcgi_error.o: fastcgi.hpp
