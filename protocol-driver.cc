@@ -71,28 +71,27 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 
 	// Process the message. That involves a lookup in the
 	// proc_funcs array, using the message type as index. Then the
-	// function is called.
+	// function is called. Use a sentry to make sure the message
+	// is removed from the buffer in case of on exception.
 
-	try
+	class sentry
 	    {
-	    cerr << "Received message: id = " << msg_id << ", "
-		 << "body len = " << msg_len << ", "
-		 << "type = " << (int)hp->type << endl;
-
-	    if (hp->type > TYPE_UNKNOWN || proc_funcs[hp->type] == 0)
-		process_unknown(hp->type);
-	    else
-		(this->*proc_funcs[hp->type])(msg_id, InputBuffer.data()+sizeof(Header), msg_len);
-
-	    // Remove message from input buffer.
-
-	    InputBuffer.erase(0, sizeof(Header)+msg_len+hp->paddingLength);
+	    basic_string<u_int8_t>& buf;
+	    size_t count;
+	  public:
+	    sentry(basic_string<u_int8_t>& b, size_t c) : buf(b), count(c) { }
+	    ~sentry() { buf.erase(0, count); }
 	    }
-	catch(...)
-	    {
-	    InputBuffer.erase(0, sizeof(Header)+msg_len+hp->paddingLength);
-	    throw;
-	    }
+	s(InputBuffer, sizeof(Header)+msg_len+hp->paddingLength);
+
+	cerr << "Received message: id = " << msg_id << ", "
+	     << "body len = " << msg_len << ", "
+	     << "type = " << (int)hp->type << endl;
+
+	if (hp->type > TYPE_UNKNOWN || proc_funcs[hp->type] == 0)
+	    process_unknown(hp->type);
+	else
+	    (this->*proc_funcs[hp->type])(msg_id, InputBuffer.data()+sizeof(Header), msg_len);
 	}
     }
 
