@@ -15,6 +15,32 @@
 #include <map>
 #include <queue>
 
+struct fcgi_error : public runtime_error
+    {
+    fcgi_error(const string& w) : runtime_error(w) { }
+    virtual ~fcgi_error() = 0;
+    };
+
+fcgi_error::~fcgi_error()
+    {
+    }
+
+struct unsupported_fcgi_version : public fcgi_error
+    {
+    unsupported_fcgi_version(const string& w) : fcgi_error(w) { }
+    };
+
+struct duplicate_begin_request : public fcgi_error
+    {
+    duplicate_begin_request(const string& w) : fcgi_error(w) { }
+    };
+
+struct unknown_fcgi_request : public fcgi_error
+    {
+    unknown_fcgi_request(const string& w) : fcgi_error(w) { }
+    };
+
+
 class FCGIProtocolDriver
     {
   public:
@@ -53,7 +79,7 @@ class FCGIProtocolDriver
 		{
 		char buf[256];
 		sprintf(buf, "FCGIProtocolDriver cannot handle protocol version %u.", hp->version);
-		throw invalid_argument(buf);
+		throw unsupported_fcgi_version(buf);
 		}
 
 	    // Check whether we have the whole message that follows
@@ -82,7 +108,7 @@ class FCGIProtocolDriver
 			    char buf[256];
 			    sprintf(buf, "FCGIProtocolDriver received BEGIN_REQUEST id %u, which " \
 				    "exists already.", hp->type);
-			    throw logic_error(buf);
+			    throw duplicate_begin_request(buf);
 			    }
 			else
 			    {
@@ -175,7 +201,7 @@ class FCGIProtocolDriver
 		    default:
 			char buf[256];
 			sprintf(buf, "FCGIProtocolDriver received unknown request type %u.", hp->type);
-			throw invalid_argument(buf);
+			throw unknown_fcgi_request(buf);
 		    }
 
 		InputBuffer.erase(0, sizeof(Header)+msg_len+hp->paddingLength);
@@ -213,7 +239,7 @@ class FCGIProtocolDriver
 
       protected:
 	friend class FCGIProtocolDriver;
-	void abort(void) throw()
+	void abort(void)
 	    {
 	    aborted = true;
 	    }
