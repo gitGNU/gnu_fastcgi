@@ -39,7 +39,6 @@ class OutputCallback : public FCGIProtocolDriver::OutputCallback
     int fd;
     };
 
-
 int main()
 try {
     for(;;)
@@ -95,7 +94,7 @@ try {
 
 	// Handle request.
 
-	cerr << "Starting to handle request." << endl;
+	cerr << "Starting to handle request #" << req->id << endl;
 	ostrstream os;
 	os << "Content-type: text/html\r\n"
 	   << "\r\n"
@@ -111,8 +110,8 @@ try {
 
 	req->write(os.str(), os.pcount());
 	os.freeze(0);
+	cerr << "Request #" << req->id << " handled successfully." << endl;
 	req->end_request(0, FCGIProtocolDriver::REQUEST_COMPLETE);
-	cerr << "Request handled successfully." << endl;
 	}
 
     // done
