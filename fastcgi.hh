@@ -121,7 +121,8 @@ class FCGIProtocolDriver
     ~FCGIProtocolDriver();
 
     void process_input(const void* buf, size_t count);
-    FCGIRequest* get_request(void);
+    FCGIRequest* get_request();
+    bool have_active_requests();
 
   private:			// don't copy me
     FCGIProtocolDriver(const FCGIProtocolDriver&);

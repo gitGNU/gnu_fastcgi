@@ -106,7 +106,7 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 	}
     }
 
-FCGIRequest* FCGIProtocolDriver::get_request(void)
+FCGIRequest* FCGIProtocolDriver::get_request()
     {
     if (new_request_queue.empty())
 	return 0;
@@ -114,6 +114,14 @@ FCGIRequest* FCGIProtocolDriver::get_request(void)
     FCGIRequest* r = reqmap[new_request_queue.front()];
     new_request_queue.pop();
     return r;
+    }
+
+bool FCGIProtocolDriver::have_active_requests()
+    {
+    if (new_request_queue.empty() && reqmap.empty())
+	return false;
+    else
+	return true;
     }
 
 void FCGIProtocolDriver::terminate_request(u_int16_t id)
