@@ -74,10 +74,11 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 
 	try
 	    {
+#if 0
 	    cerr << "Received message: id = " << msg_id << ", "
 		 << "body len = " << msg_len << ", "
 		 << "type = " << (int)hp->type << endl;
-
+#endif
 	    if (hp->type > TYPE_UNKNOWN || proc_funcs[hp->type] == 0)
 		process_unknown(hp->type);
 	    else
