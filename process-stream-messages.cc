@@ -23,14 +23,15 @@ void FCGIProtocolDriver::process_stdin(u_int16_t id, const u_int8_t* buf, u_int1
 	}
 
     // Is this the last message to come? Then set the eof flag.
+    // Otherwise, add the data to the buffer in the request structure.
 
     if (len == 0)
-	{
 	req->second->stdin_eof = true;
-	return;
-	}
+    else
+	req->second->stdin_stream.append((const char*)buf, len);
 
-    // Add data to stream.
+    // Notify the handler associated with this request.
 
-    req->second->stdin_stream.append((const char*)buf, len);
+    if (req->second->handler_cb)
+	(*req->second->handler_cb)(req->second);
     }

@@ -21,8 +21,8 @@ void FCGIProtocolDriver::process_begin_request(u_int16_t id, const u_int8_t* buf
 	throw duplicate_begin_request(tmp);
 	}
 
-    // Create a new request instance and put it into the queue so that
-    // the user may get it.
+    // Create a new request instance and store it away. The user may
+    // get it after we've read all parameters.
 
     const BeginRequest* br = reinterpret_cast<const BeginRequest*>(buf);
     reqmap[id] = new FCGIRequest(*this, id,
@@ -40,7 +40,11 @@ void FCGIProtocolDriver::process_abort_request(u_int16_t id, const u_int8_t*, u_
 	cerr << "FCGIProtocolDriver received ABORT_REQUEST for non-existing id " << id << ". Ignoring."
 	     << endl;
     else
+	{
 	req->second->aborted = true;
+	if (req->second->handler_cb) // Notify the handler associated with this request.
+	    (*req->second->handler_cb)(req->second);
+	}
     }
 
 void FCGIProtocolDriver::process_params(u_int16_t id, const u_int8_t* buf, u_int16_t len)

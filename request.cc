@@ -11,12 +11,14 @@
 
 FCGIRequest::FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc)
 	: id(id_), role(role_), keep_connection(kc), aborted(false), stdin_eof(false),
-          data_eof(false), driver(driver_)
+          data_eof(false), handler_cb(0), driver(driver_)
     {
     }
 
 FCGIRequest::~FCGIRequest()
     {
+    if (handler_cb)
+	delete handler_cb;
     }
 
 void FCGIRequest::write(const string& buf, ostream_type_t stream)

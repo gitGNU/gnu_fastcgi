@@ -86,6 +86,13 @@ class FCGIRequest
 	};
     void end_request(u_int32_t appStatus, protocol_status_t protStatus);
 
+    struct handler
+	{
+	virtual ~handler() { }
+	virtual void operator()(FCGIRequest*) = 0;
+	};
+    handler* handler_cb;
+
   private:
     FCGIProtocolDriver& driver;
     u_int8_t tmp_buf[64];
