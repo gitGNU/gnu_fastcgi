@@ -10,7 +10,7 @@
 #ifndef __INTERNAL_HPP__
 #define __INTERNAL_HPP__
 
-#include "fastcgi.hpp"
+#include "fastcgi.hh"
 
 namespace
     {

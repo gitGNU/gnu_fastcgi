@@ -7,7 +7,7 @@
  * All rights reserved.
  */
 
-#include "internal.hpp"
+#include "internal.hh"
 
 void FCGIProtocolDriver::process_unknown(u_int8_t type)
      {

@@ -7,7 +7,7 @@
  * All rights reserved.
  */
 
-#include "internal.hpp"
+#include "internal.hh"
 
 const FCGIProtocolDriver::proc_func_t FCGIProtocolDriver::proc_funcs[] =
     {

@@ -1,0 +1,16 @@
+# Build the fastcgi library.
+
+libfastcgi.a == %libfastcgi.a.sm :a
+
+%libfastcgi.a.sm == <<
+    protocol-driver.cc
+    process-messages.cc
+    process-admin-messages.cc
+    process-stream-messages.cc
+    request.cc
+    fcgi-error.cc
+
+test == test.cc +lib=(libfastcgi.a) :exe
+
+%clean ! == !<<
+    rm -f test libfastcgi.a

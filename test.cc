@@ -14,7 +14,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "fastcgi.hpp"
+#include "fastcgi.hh"
 
 class OutputCallback : public FCGIProtocolDriver::OutputCallback
     {

@@ -7,7 +7,7 @@
  * All rights reserved.
  */
 
-#include "internal.hpp"
+#include "internal.hh"
 
 void FCGIProtocolDriver::process_begin_request(u_int16_t id, const u_int8_t* buf, u_int16_t)
     {

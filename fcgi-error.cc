@@ -7,7 +7,7 @@
  * All rights reserved.
  */
 
-#include "fastcgi.hpp"
+#include "fastcgi.hh"
 
 // Even pure virtual member functions must exist for the linker.
 

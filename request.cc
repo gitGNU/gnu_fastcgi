@@ -7,7 +7,7 @@
  * All rights reserved.
  */
 
-#include "internal.hpp"
+#include "internal.hh"
 
 FCGIRequest::FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc)
 	: id(id_), role(role_), keep_connection(kc), aborted(false), stdin_eof(false),
