@@ -79,16 +79,16 @@ try {
 	if (req->keep_connection)
 	    {
 	    cerr << "Test program can't handle KEEP_CONNECTION." << endl;
-	    req->end_request(1, FCGIProtocolDriver::CANT_MPX_CONN);
+	    req->end_request(1, FCGIRequest::CANT_MPX_CONN);
 	    continue;
 	    }
 
 	// Make sure we are a responder.
 
-	if (req->role != FCGIProtocolDriver::ROLE_RESPONDER)
+	if (req->role != FCGIRequest::RESPONDER)
 	    {
 	    cerr << "Test program can't handle any role but RESPONDER." << endl;
-	    req->end_request(1, FCGIProtocolDriver::UNKNOWN_ROLE);
+	    req->end_request(1, FCGIRequest::UNKNOWN_ROLE);
 	    continue;
 	    }
 
@@ -112,7 +112,7 @@ try {
 	req->write(os.str(), os.pcount());
 	os.freeze(0);
 	cerr << "Request #" << req->id << " handled successfully." << endl;
-	req->end_request(0, FCGIProtocolDriver::REQUEST_COMPLETE);
+	req->end_request(0, FCGIRequest::REQUEST_COMPLETE);
 	}
 
     // done

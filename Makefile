@@ -33,3 +33,4 @@ install:	test
 # Dependencies
 
 fcgi_error.o protocol_driver.o request.o test.o:	fastcgi.hpp
+protocol_driver.o request.o: 				internal.hpp

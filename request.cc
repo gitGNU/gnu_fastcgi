@@ -7,9 +7,9 @@
  * All rights reserved.
  */
 
-#include "fastcgi.hpp"
+#include "internal.hpp"
 
-FCGIRequest::FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, u_int16_t role_, bool kc)
+FCGIRequest::FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc)
 	: id(id_), role(role_), keep_connection(kc), have_all_params(false),
           aborted(false), driver(driver_)
     {
@@ -39,67 +39,26 @@ void FCGIRequest::write(const void* buf, size_t count)
 
     // Construct message.
 
-    FCGIProtocolDriver::Header h =
-	{
-	1,
-	FCGIProtocolDriver::TYPE_STDOUT,
-	id >> 8, id & 0xff,
-	count >> 8, count & 0xff,
-	0,
-	0
-	};
+    Header h(TYPE_STDOUT, id, count);
     driver.output_cb(&h, sizeof(h));
     driver.output_cb(buf, count);
     }
 
-void FCGIRequest::end_request(u_int32_t appStatus, u_int8_t protStatus)
+void FCGIRequest::end_request(u_int32_t appStatus, FCGIRequest::protocol_status_t protStatus)
     {
     // Terminate the stdout stream.
 
-    FCGIProtocolDriver::Header h1 =
-	{
-	1,
-	FCGIProtocolDriver::TYPE_STDOUT,
-	id >> 8, id & 0xff,
-	0, 0,
-	0,
-	0
-	};
+    Header h1(TYPE_STDOUT, id, 0);
     driver.output_cb(&h1, sizeof(h1));
 
     // Terminate the stderr stream.
 
-    FCGIProtocolDriver::Header h2 =
-	{
-	1,
-	FCGIProtocolDriver::TYPE_STDERR,
-	id >> 8, id & 0xff,
-	0, 0,
-	0,
-	0
-	};
+    Header h2(TYPE_STDERR, id, 0);
     driver.output_cb(&h2, sizeof(h2));
 
     // Send the end-request message.
 
-    FCGIProtocolDriver::EndRequestMsg msg =
-	{
-	    {
-	    1,
-	    FCGIProtocolDriver::TYPE_END_REQUEST,
-	    id >> 8, id & 0xff,
-	    sizeof(msg)-sizeof(FCGIProtocolDriver::Header) >> 8,
-	    sizeof(msg)-sizeof(FCGIProtocolDriver::Header) & 0xff,
-	    0,
-	    0
-	    },
-	(appStatus >> 24) & 0xff,
-	(appStatus >> 16) & 0xff,
-	(appStatus >>  8) & 0xff,
-	(appStatus >>  0) & 0xff,
-	protStatus,
-	{ 0, 0, 0 }
-	};
+    EndRequestMsg msg(id, appStatus, protStatus);
     driver.output_cb(&msg, sizeof(msg));
     driver.terminate_request(id);
     }

@@ -7,7 +7,7 @@
  * All rights reserved.
  */
 
-#include "fastcgi.hpp"
+#include "internal.hpp"
 
 FCGIProtocolDriver::FCGIProtocolDriver(OutputCallback& cb) : output_cb(cb)
     {
@@ -68,20 +68,7 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 
 		    default:
 			{
-			FCGIProtocolDriver::UnknownTypeMsg msg =
-			    {
-			        {
-				1,
-				FCGIProtocolDriver::TYPE_UNKNOWN,
-				0, 0,
-				sizeof(msg)-sizeof(FCGIProtocolDriver::Header) >> 8,
-				sizeof(msg)-sizeof(FCGIProtocolDriver::Header) & 0xff,
-				0,
-				0
-				},
-			    hp->type,
-				{ 0, 0, 0, 0, 0, 0, 0 }
-			    };
+			UnknownTypeMsg msg(hp->type);
 			output_cb(&msg, sizeof(msg));
 			}
 		    }
@@ -111,7 +98,7 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 			    reinterpret_cast<const BeginRequest*>(InputBuffer.data()+sizeof(Header));
 			reqmap[msg_id] = new FCGIRequest(*this,
 							 msg_id,
-							 (br->roleB1 << 8) + br->roleB0,
+							 FCGIRequest::role_t((br->roleB1 << 8) + br->roleB0),
 							 (br->flags & FLAG_KEEP_CONN) == 1);
 			new_request_queue.push(msg_id);
 			}
@@ -169,7 +156,7 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 			    }
 			name.assign(reinterpret_cast<const char*>(p), name_len);
 			data.assign(reinterpret_cast<const char*>(p)+name_len, data_len);
-			const_cast< map<string,string>& >(req->second->params)[name] = data;
+			req->second->params[name] = data;
 			}
 		    else
 			cerr << "FCGIProtocolDriver received PARAMS for id "
