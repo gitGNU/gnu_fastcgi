@@ -39,9 +39,9 @@ class OutputCallback : public FCGIProtocolDriver::OutputCallback
     int fd;
     };
 
-int main()
+int main(int, char** argv)
 try {
-    for(;;)
+     for(size_t req_counter = 0;;)
 	{
 	// Accept a connection.
 
@@ -92,26 +92,52 @@ try {
 	    continue;
 	    }
 
-	// Handle request.
+	// Print page with the environment details.
 
-	cerr << "Starting to handle request #" << req->id << endl;
+	cerr << argv[0] << "[" << getpid() << "]: Starting to handle request #" << req->id << "." << endl;
+	++req_counter;
 	ostrstream os;
 	os << "Content-type: text/html\r\n"
 	   << "\r\n"
 	   << "<title>FastCGI Test Program</title>" << endl
 	   << "<h1 align=center>FastCGI Test Program</h1>" << endl
 	   << "<h3>FastCGI Status</h3>" << endl
-	   << "Process id     = " << getpid() << "<br>" << endl
-	   << "Request id     = " << req->id << "<br>" << endl
-	   << "Request socket = " << socket << "<br>" << endl
+	   << "Test Program Compile Time = " << __DATE__ " " __TIME__ << "<br>" << endl
+	   << "Process id                = " << getpid() << "<br>" << endl
+	   << "Request socket            = " << socket << "<br>" << endl
+	   << "Request id                = " << req->id << "<br>" << endl
+	   << "Request number            = " << req_counter << "<br>" << endl
 	   << "<h3>Request Environment</h3>" << endl;
-
 	for (map<string,string>::const_iterator i = req->params.begin(); i != req->params.end(); ++i)
 	    os << i->first << "&nbsp;=&nbsp;" << i->second << "<br>" << endl;
-
 	req->write(os.str(), os.pcount());
 	os.freeze(0);
-	cerr << "Request #" << req->id << " handled successfully." << endl;
+
+	// Make sure we read the entire standard input stream, then
+	// echo it back.
+
+	req->write("<h3>Input Stream</h3>\n" \
+		   "<pre>\n");
+#if 0
+	while(req->stdin_eof == false)
+	    {
+	    char buf[4*1024];
+	    ssize_t rc = read(socket, buf, sizeof(buf));
+	    if (rc < 0)
+		throw runtime_error("read() failed.");
+	    driver.process_input(buf, rc);
+	    if (req->stdin_stream.empty() == false)
+		{
+		req->write(req->stdin_stream);
+		req->stdin_stream.erase();
+		}
+	    }
+#endif
+	req->write("</pre>\n");
+
+	// Terminate the request.
+
+	cerr << argv[0] << "[" << getpid() << "]: Request #" << req->id << " handled successfully." << endl;
 	req->end_request(0, FCGIRequest::REQUEST_COMPLETE);
 	}
 
