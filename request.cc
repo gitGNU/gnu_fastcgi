@@ -52,6 +52,34 @@ void FCGIRequest::write(const void* buf, size_t count)
 
 void FCGIRequest::end_request(u_int32_t appStatus, u_int8_t protStatus)
     {
+    // Terminate the stdout stream.
+
+    FCGIProtocolDriver::Header h1 =
+	{
+	1,
+	FCGIProtocolDriver::TYPE_STDOUT,
+	id >> 8, id & 0xff,
+	0, 0,
+	0,
+	0
+	};
+    driver.output_cb(&h1, sizeof(h1));
+
+    // Terminate the stderr stream.
+
+    FCGIProtocolDriver::Header h2 =
+	{
+	1,
+	FCGIProtocolDriver::TYPE_STDERR,
+	id >> 8, id & 0xff,
+	0, 0,
+	0,
+	0
+	};
+    driver.output_cb(&h2, sizeof(h2));
+
+    // Send the end-request message.
+
     FCGIProtocolDriver::EndRequestMsg msg =
 	{
 	    {
