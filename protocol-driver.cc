@@ -56,8 +56,42 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 	// Process the message.
 
 	try {
-	    reqmap_t::iterator req;
+	    if (msg_id == 0)
+		{
+		// Handle management messages.
 
+		switch(hp->type)
+		    {
+		    case TYPE_GET_VALUES:
+			cerr << "Received message type TYPE_GET_VALUES, len " << msg_len << "." << endl;
+			break;
+
+		    default:
+			{
+			FCGIProtocolDriver::UnknownTypeMsg msg =
+			    {
+			        {
+				1,
+				FCGIProtocolDriver::TYPE_UNKNOWN,
+				0, 0,
+				sizeof(msg)-sizeof(FCGIProtocolDriver::Header) >> 8,
+				sizeof(msg)-sizeof(FCGIProtocolDriver::Header) & 0xff,
+				0,
+				0
+				},
+			    hp->type,
+				{ 0, 0, 0, 0, 0, 0, 0 }
+			    };
+			output_cb(&msg, sizeof(msg));
+			}
+		    }
+
+		goto processed;
+		}
+
+	    // Handle normal requests.
+
+	    reqmap_t::iterator req;
 	    switch(hp->type)
 		{
 		case TYPE_BEGIN_REQUEST:
@@ -149,15 +183,13 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
 		case TYPE_DATA:
 		    cerr << "Received message type TYPE_DATA, len " << msg_len << "." << endl;
 		    break;
-		case TYPE_GET_VALUES:
-		    cerr << "Received message type TYPE_GET_VALUES, len " << msg_len << "." << endl;
-		    break;
 		default:
 		    char buf[256];
 		    sprintf(buf, "FCGIProtocolDriver received unknown request type %u.", hp->type);
 		    throw unknown_fcgi_request(buf);
 		}
 
+      processed:
 	    InputBuffer.erase(0, sizeof(Header)+msg_len+hp->paddingLength);
 	    }
 	catch(...)
