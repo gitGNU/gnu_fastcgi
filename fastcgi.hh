@@ -101,7 +101,7 @@ class FCGIProtocolDriver
     struct OutputCallback
 	{
 	virtual ~OutputCallback() = 0;
-	virtual ssize_t operator() (const void*, size_t) = 0;
+	virtual void operator() (const void*, size_t) = 0;
 	};
 
   public:
