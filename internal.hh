@@ -3,8 +3,8 @@
  * All rights reserved.
  */
 
-#ifndef __INTERNAL_HPP__
-#define __INTERNAL_HPP__
+#ifndef INTERNAL_HPP
+#define INTERNAL_HPP
 
 #include "fastcgi.hh"
 
@@ -102,4 +102,4 @@ namespace
 
     } // end of anonymous namespace
 
-#endif // !defined(__INTERNAL_HPP__)
+#endif // !defined(INTERNAL_HPP)

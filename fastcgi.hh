@@ -3,8 +3,8 @@
  * All rights reserved.
  */
 
-#ifndef __FASTCGI_HPP__
-#define __FASTCGI_HPP__
+#ifndef FASTCGI_HPP
+#define FASTCGI_HPP
 
 #include <iostream>
 #include <map>
@@ -147,4 +147,4 @@ class FCGIProtocolDriver
     u_int8_t tmp_buf[64];
     };
 
-#endif // !defined(__FASTCGI_HPP__)
+#endif // !defined(FASTCGI_HPP)
