@@ -4,7 +4,7 @@ CXX		= g++
 AR		= ar
 RANLIB		= ranlib
 
-CPPFLAGS	=
+CPPFLAGS	= # -DDEBUG_FASTCGI
 CXXFLAGS	= -O3 -Wall -pipe
 LDFLAGS		= -s
 

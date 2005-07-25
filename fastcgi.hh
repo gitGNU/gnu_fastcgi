@@ -1,6 +1,11 @@
 /*
- * Copyright (c) 2001 by Peter Simons <simons@ieee.org>.
- * All rights reserved.
+ * Copyright (c) 2005 by Peter Simons <simons@cryp.to>.
+ *
+ * Copying and distribution of this file, with or without
+ * modification, are permitted in any medium without royalty
+ * provided the copyright notice and this notice are preserved.
+ *
+ * See <http://cryp.to/libfastcgi/> for the latest version.
  */
 
 #ifndef FASTCGI_HH
@@ -14,9 +19,6 @@
 #include <new>
 #include <unistd.h>
 
-// g++ 3.x seems to lack std::char_traits<unsigend char>. Both version
-// 2.x and version 4.x have it though. It's odd.
-
 #if __GNUG__ == 3
 #  include "unsigned-char-traits.hh"
 #endif
@@ -26,7 +28,7 @@
 class FCGIProtocolDriver;
 class FCGIRequest;
 
-// Exceptions we throw.
+// All exceptions we throw derive from fcgi_error.
 
 struct fcgi_error : public std::runtime_error
 {
@@ -123,7 +125,7 @@ public:
   FCGIRequest* get_request();
   bool have_active_requests();
 
-private:			// don't copy me
+private:                        // don't copy me
   FCGIProtocolDriver(const FCGIProtocolDriver&);
   FCGIProtocolDriver& operator= (const FCGIProtocolDriver&);
 

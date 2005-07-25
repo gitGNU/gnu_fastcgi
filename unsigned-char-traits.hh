@@ -1,6 +1,11 @@
 /*
- * Copyright (c) 2005 by Peter Simons <simons@ieee.org>.
- * All rights reserved.
+ * Copyright (c) 2005 by Peter Simons <simons@cryp.to>.
+ *
+ * Copying and distribution of this file, with or without
+ * modification, are permitted in any medium without royalty
+ * provided the copyright notice and this notice are preserved.
+ *
+ * See <http://cryp.to/libfastcgi/> for the latest version.
  */
 
 #ifndef UNSIGNED_CHAR_TRAITS_HH
@@ -10,6 +15,9 @@
 
 namespace std
 {
+  // g++ 3.x seems to lack std::char_traits<unsigend char>. Both
+  // version 2.x and version 4.x have it though. It's odd.
+
   template<> struct char_traits<u_int8_t>
   {
     typedef u_int8_t          char_type;

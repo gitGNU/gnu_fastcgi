@@ -1,6 +1,11 @@
 /*
- * Copyright (c) 2001 by Peter Simons <simons@ieee.org>.
- * All rights reserved.
+ * Copyright (c) 2005 by Peter Simons <simons@cryp.to>.
+ *
+ * Copying and distribution of this file, with or without
+ * modification, are permitted in any medium without royalty
+ * provided the copyright notice and this notice are preserved.
+ *
+ * See <http://cryp.to/libfastcgi/> for the latest version.
  */
 
 #include "internal.hh"
