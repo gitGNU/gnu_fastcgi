@@ -8,7 +8,7 @@ CPPFLAGS	=
 CXXFLAGS	= -O3 -Wall -pipe
 LDFLAGS		= -s
 
-OBJS		= fcgi-error.o process-admin-messages.o process-messages.o \
+OBJS		= process-admin-messages.o process-messages.o \
 		  process-stream-messages.o protocol-driver.o request.o
 
 .cc.o:
@@ -30,7 +30,6 @@ clean::
 
 # Dependencies
 
-fcgi-error.o: fastcgi.hh
 process-admin-messages.o: internal.hh fastcgi.hh
 process-messages.o: internal.hh fastcgi.hh
 process-stream-messages.o: internal.hh fastcgi.hh

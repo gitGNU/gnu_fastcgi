@@ -1,0 +1,9 @@
+-- .monotonerc for to.cryp.libfastcgi
+
+function ignore_file(name)
+  if (name == "test") then return true end
+  if (string.find(name, "%.a$")) then return true end
+  if (string.find(name, "%.o$")) then return true end
+
+  return false
+end
