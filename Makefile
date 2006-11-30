@@ -4,9 +4,9 @@ CXX		= g++
 AR		= ar
 RANLIB		= ranlib
 
-CPPFLAGS	= # -DDEBUG_FASTCGI
+CPPFLAGS	= -I../libscheduler # -DDEBUG_FASTCGI
 CXXFLAGS	= -O3 -Wall -pipe
-LDFLAGS		= -s
+LDFLAGS		=
 
 OBJS		= process-admin-messages.o process-messages.o \
 		  process-stream-messages.o protocol-driver.o request.o
@@ -24,15 +24,20 @@ libfastcgi.a:	$(OBJS)
 test:		test.o libfastcgi.a
 	$(CXX) $(LDFLAGS) -o $@ test.o libfastcgi.a
 
+echo:		echo.o libfastcgi.a
+	$(CXX) $(LDFLAGS) -o $@ echo.o libfastcgi.a
+
 clean::
-	rm -f libfastcgi.a $(OBJS)
-	rm -f test test.o
+	@rm -f libfastcgi.a $(OBJS)
+	@rm -f test test.o echo echo.o
+	@rm -f *.bak
 
 # Dependencies
 
-process-admin-messages.o: internal.hh fastcgi.hh
-process-messages.o: internal.hh fastcgi.hh
-process-stream-messages.o: internal.hh fastcgi.hh
-protocol-driver.o: internal.hh fastcgi.hh
-request.o: internal.hh fastcgi.hh
-test.o: fastcgi.hh
+process-admin-messages.o:	internal.hh fastcgi.hh
+process-messages.o:		internal.hh fastcgi.hh
+process-stream-messages.o:	internal.hh fastcgi.hh
+protocol-driver.o:		internal.hh fastcgi.hh
+request.o:			internal.hh fastcgi.hh
+test.o:				fastcgi.hh
+echo.o:				infrastructure.hh
