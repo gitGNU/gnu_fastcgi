@@ -4,7 +4,7 @@ CXX		= g++
 AR		= ar
 RANLIB		= ranlib
 
-CPPFLAGS	= -I../libscheduler # -DDEBUG_FASTCGI
+CPPFLAGS	= -I../libscheduler -DDEBUG_FASTCGI -I$${BOOST_ROOT}
 CXXFLAGS	= -O3 -Wall -pipe
 LDFLAGS		=
 
@@ -24,6 +24,9 @@ libfastcgi.a:	$(OBJS)
 test:		test.o libfastcgi.a
 	$(CXX) $(LDFLAGS) -o $@ test.o libfastcgi.a
 
+asio-test:	asio-test.o libfastcgi.a
+	$(CXX) $(LDFLAGS) -o $@ asio-test.o libfastcgi.a
+
 echo:		echo.o libfastcgi.a
 	$(CXX) $(LDFLAGS) -o $@ echo.o libfastcgi.a
 
@@ -31,6 +34,11 @@ clean::
 	@rm -f libfastcgi.a $(OBJS)
 	@rm -f test test.o echo echo.o
 	@rm -f *.bak
+
+index.html:	README
+	@lhs2html $<
+	@sed -e 's%<p>\(.*Homepage\]</a></p>\)%<p class="title">\1%' <$<.html >$@
+	@rm -f $<.html
 
 # Dependencies
 

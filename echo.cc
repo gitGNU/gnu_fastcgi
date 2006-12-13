@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005 by Peter Simons <simons@cryp.to>.
+ * Copyright (c) 2001-2006 by Peter Simons <simons@cryp.to>
  *
  * Copying and distribution of this file, with or without
  * modification, are permitted in any medium without royalty
@@ -38,10 +38,10 @@ private:
     std::ostringstream os;
     os << "Content-type: text/html\r\n"
        << "\r\n"
-       << "<title>FastCGI Test Program</title>" << std::endl
-       << "<h1 align=center>FastCGI Test Program</h1>" << std::endl
+       << "<title>FastCGI Echo Program</title>" << std::endl
+       << "<h1 align=center>FastCGI Echo Program</h1>" << std::endl
        << "<h3>FastCGI Status</h3>" << std::endl
-       << "Test Program Compile Time = " << __DATE__ " " __TIME__ << "<br>" << std::endl
+       << "Echo Program Compile Time = " << __DATE__ " " __TIME__ << "<br>" << std::endl
        << "Process id                = " << getpid() << "<br>" << std::endl
        << "Request id                = " << req->id << "<br>" << std::endl
        << "<h3>Request Environment</h3>" << std::endl;

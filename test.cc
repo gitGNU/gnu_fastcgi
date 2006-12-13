@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005 by Peter Simons <simons@cryp.to>.
+ * Copyright (c) 2001-2006 by Peter Simons <simons@cryp.to>
  *
  * Copying and distribution of this file, with or without
  * modification, are permitted in any medium without royalty
@@ -145,12 +145,12 @@ try
   return 0;
 }
 catch(const std::exception &e)
-    {
-    std::cerr << "Caught exception: " << e.what() << std::endl;
-    return 1;
-    }
+{
+  std::cerr << "Caught exception: " << e.what() << std::endl;
+  return 1;
+}
 catch(...)
-    {
-    std::cerr << "Caught unknown exception." << std::endl;
-    return 1;
-    }
+{
+  std::cerr << "Caught unknown exception." << std::endl;
+  return 1;
+}

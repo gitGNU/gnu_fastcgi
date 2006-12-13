@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005 by Peter Simons <simons@cryp.to>.
+ * Copyright (c) 2001-2006 by Peter Simons <simons@cryp.to>
  *
  * Copying and distribution of this file, with or without
  * modification, are permitted in any medium without royalty
@@ -19,7 +19,7 @@
 #include <new>
 #include <unistd.h>
 
-#if __GNUG__ == 3
+#if defined(__GNUG__) && __GNUG__ == 3
 #  include "unsigned-char-traits.hh"
 #endif
 
