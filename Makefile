@@ -16,4 +16,4 @@ clean::
 
 # Dependencies
 
-test.o: scheduler.hh pollvector.hh
+test.o: scheduler.hpp pollvector.hpp

@@ -2,9 +2,3 @@ exe test
   : test.cpp
   : <library>/boost/test//boost_prg_exec_monitor
   ;
-
-exe iocore
-  : iocore.cpp
-  : <threading>multi
-    <library>/boost/test//boost_prg_exec_monitor
-  ;
