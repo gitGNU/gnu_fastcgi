@@ -6,5 +6,5 @@ lib fastcgi
     request.cpp
   ;
 
-exe test.fcgi : test.cpp fastcgi : <include>../scheduler ;
-exe echo.fcgi : echo.cpp fastcgi : <include>../scheduler ;
+exe test : test.cpp fastcgi : <include>../scheduler ;
+exe echo : echo.cpp fastcgi : <include>../scheduler ;
