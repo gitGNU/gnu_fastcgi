@@ -1,0 +1,10 @@
+lib fastcgi
+  : process-admin-messages.cpp
+    process-messages.cpp
+    process-stream-messages.cpp
+    protocol-driver.cpp
+    request.cpp
+  ;
+
+exe test.fcgi : test.cpp fastcgi : <include>../scheduler ;
+exe echo.fcgi : echo.cpp fastcgi : <include>../scheduler ;
