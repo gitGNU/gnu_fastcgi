@@ -1,14 +1,16 @@
 /*
- * Copyright (c) 2001-2006 by Peter Simons <simons@cryp.to>
+ * Copyright (c) 2001-2007 Peter Simons <simons@cryp.to>
+ *
+ * This software is provided 'as-is', without any express or
+ * implied warranty. In no event will the authors be held liable
+ * for any damages arising from the use of this software.
  *
  * Copying and distribution of this file, with or without
  * modification, are permitted in any medium without royalty
  * provided the copyright notice and this notice are preserved.
- *
- * See <http://cryp.to/libfastcgi/> for the latest version.
  */
 
-#include "internal.hh"
+#include "internal.hpp"
 
 const FCGIProtocolDriver::proc_func_t FCGIProtocolDriver::proc_funcs[] =
   { 0                                           // unused
@@ -75,9 +77,9 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
     try
     {
 #ifdef DEBUG_FASTCGI
-      cerr << "Received message: id = " << msg_id << ", "
-           << "body len = " << msg_len << ", "
-           << "type = " << (int)hp->type << endl;
+      std::cerr << "Received message: id = " << msg_id << ", "
+                << "body len = " << msg_len << ", "
+                << "type = " << (int)hp->type << std::endl;
 #endif
       if (hp->type > TYPE_UNKNOWN || proc_funcs[hp->type] == 0)
         process_unknown(hp->type);

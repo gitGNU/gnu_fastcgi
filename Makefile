@@ -24,9 +24,6 @@ libfastcgi.a:	$(OBJS)
 test:		test.o libfastcgi.a
 	$(CXX) $(LDFLAGS) -o $@ test.o libfastcgi.a
 
-asio-test:	asio-test.o libfastcgi.a
-	$(CXX) $(LDFLAGS) -o $@ asio-test.o libfastcgi.a
-
 echo:		echo.o libfastcgi.a
 	$(CXX) $(LDFLAGS) -o $@ echo.o libfastcgi.a
 
@@ -35,17 +32,12 @@ clean::
 	@rm -f test test.o echo echo.o
 	@rm -f *.bak
 
-index.html:	README
-	@lhs2html $<
-	@sed -e 's%<p>\(.*Homepage\]</a></p>\)%<p class="title">\1%' <$<.html >$@
-	@rm -f $<.html
-
 # Dependencies
 
-process-admin-messages.o:	internal.hh fastcgi.hh
-process-messages.o:		internal.hh fastcgi.hh
-process-stream-messages.o:	internal.hh fastcgi.hh
-protocol-driver.o:		internal.hh fastcgi.hh
-request.o:			internal.hh fastcgi.hh
-test.o:				fastcgi.hh
-echo.o:				infrastructure.hh
+process-admin-messages.o:	internal.hpp fastcgi.hpp
+process-messages.o:		internal.hpp fastcgi.hpp
+process-stream-messages.o:	internal.hpp fastcgi.hpp
+protocol-driver.o:		internal.hpp fastcgi.hpp
+request.o:			internal.hpp fastcgi.hpp
+test.o:				fastcgi.hpp
+echo.o:				infrastructure.hpp
