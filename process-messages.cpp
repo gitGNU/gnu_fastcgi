@@ -74,23 +74,34 @@ void FCGIProtocolDriver::process_params(u_int16_t id, const u_int8_t* buf, u_int
 
   // Process message.
 
-  u_int32_t   name_len, data_len;
-  std::string name, data;
-  if (*buf >> 7 == 0)
-    name_len = *(buf++);
-  else
+  u_int8_t const * const  bufend(buf + len);
+  u_int32_t               name_len;
+  u_int32_t               data_len;
+  while(buf != bufend)
   {
-    name_len = ((buf[0] & 0x7F) << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
-    buf += 4;
+    if (*buf >> 7 == 0)
+      name_len = *(buf++);
+    else
+    {
+      name_len = ((buf[0] & 0x7F) << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
+      buf += 4;
+    }
+    if (*buf >> 7 == 0)
+      data_len = *(buf++);
+    else
+    {
+      data_len = ((buf[0] & 0x7F) << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
+      buf += 4;
+    }
+    assert(buf + name_len + data_len <= bufend);
+    std::string const name(reinterpret_cast<const char*>(buf), name_len);
+    buf += name_len;
+    std::string const data(reinterpret_cast<const char*>(buf), data_len);
+    buf += data_len;
+#ifdef DEBUG_FASTCGI
+    std::cerr << "request #" << id << ": FCGIProtocolDriver received PARAM '" << name << "' = '" << data << "'"
+              << std::endl;
+#endif
+    req->second->params[name] = data;
   }
-  if (*buf >> 7 == 0)
-    data_len = *(buf++);
-  else
-  {
-    data_len = ((buf[0] & 0x7F) << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
-    buf += 4;
-  }
-  name.assign(reinterpret_cast<const char*>(buf), name_len);
-  data.assign(reinterpret_cast<const char*>(buf)+name_len, data_len);
-  req->second->params[name] = data;
 }
