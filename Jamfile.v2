@@ -4,6 +4,7 @@ lib fastcgi
     process-stream-messages.cpp
     protocol-driver.cpp
     request.cpp
+  : <variant>debug:<define>DEBUG_FASTCGI=1
   ;
 
 exe test : test.cpp fastcgi : <include>../scheduler ;
