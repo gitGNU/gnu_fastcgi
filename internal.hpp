@@ -14,6 +14,7 @@
 #define FASTCGI_INTERNAL_HPP_INCLUDED
 
 #include "fastcgi.hpp"
+#include <iostream>
 
 enum message_type_t
   { TYPE_BEGIN_REQUEST     =  1
