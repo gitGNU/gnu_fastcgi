@@ -32,21 +32,21 @@ enum message_type_t
 
 struct Header
 {
-  u_int8_t version;
-  u_int8_t type;
-  u_int8_t requestIdB1;
-  u_int8_t requestIdB0;
-  u_int8_t contentLengthB1;
-  u_int8_t contentLengthB0;
-  u_int8_t paddingLength;
-  u_int8_t reserved;
+  uint8_t version;
+  uint8_t type;
+  uint8_t requestIdB1;
+  uint8_t requestIdB0;
+  uint8_t contentLengthB1;
+  uint8_t contentLengthB0;
+  uint8_t paddingLength;
+  uint8_t reserved;
 
   Header()
   {
     memset(this, 0, sizeof(*this));
   }
 
-  Header(message_type_t t, u_int16_t id, u_int16_t len)
+  Header(message_type_t t, uint16_t id, uint16_t len)
     : version(1), type(t)
     , requestIdB1(id >> 8)
     , requestIdB0(id & 0xff)
@@ -59,29 +59,29 @@ struct Header
 
 struct BeginRequest
 {
-  u_int8_t roleB1;
-  u_int8_t roleB0;
-  u_int8_t flags;
-  u_int8_t reserved[5];
+  uint8_t roleB1;
+  uint8_t roleB0;
+  uint8_t flags;
+  uint8_t reserved[5];
 };
 
-static const u_int8_t FLAG_KEEP_CONN  = 1;
+static const uint8_t FLAG_KEEP_CONN  = 1;
 
 struct EndRequestMsg : public Header
 {
-  u_int8_t appStatusB3;
-  u_int8_t appStatusB2;
-  u_int8_t appStatusB1;
-  u_int8_t appStatusB0;
-  u_int8_t protocolStatus;
-  u_int8_t reserved[3];
+  uint8_t appStatusB3;
+  uint8_t appStatusB2;
+  uint8_t appStatusB1;
+  uint8_t appStatusB0;
+  uint8_t protocolStatus;
+  uint8_t reserved[3];
 
   EndRequestMsg()
   {
     memset(this, 0, sizeof(*this));
   }
 
-  EndRequestMsg(u_int16_t id, u_int32_t appStatus, FCGIRequest::protocol_status_t protStatus)
+  EndRequestMsg(uint16_t id, uint32_t appStatus, FCGIRequest::protocol_status_t protStatus)
     : Header(TYPE_END_REQUEST, id, sizeof(EndRequestMsg)-sizeof(Header))
     , appStatusB3((appStatus >> 24) & 0xff)
     , appStatusB2((appStatus >> 16) & 0xff)
@@ -95,15 +95,15 @@ struct EndRequestMsg : public Header
 
 struct UnknownTypeMsg : public Header
 {
-  u_int8_t type;
-  u_int8_t reserved[7];
+  uint8_t type;
+  uint8_t reserved[7];
 
   UnknownTypeMsg()
   {
     memset(this, 0, sizeof(*this));
   }
 
-  UnknownTypeMsg(u_int8_t unknown_type)
+  UnknownTypeMsg(uint8_t unknown_type)
     : Header(TYPE_UNKNOWN, 0, sizeof(UnknownTypeMsg) - sizeof(Header))
     , type(unknown_type)
   {

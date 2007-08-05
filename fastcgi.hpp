@@ -18,6 +18,7 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+#include <stdint.h>
 
 // Forward declarations.
 
@@ -62,7 +63,7 @@ public:
     , FILTER     = 3
     };
 
-  u_int16_t const id;
+  uint16_t const id;
   role_t const role;
   bool const keep_connection;
   bool aborted;
@@ -71,7 +72,7 @@ public:
   std::string stdin_stream, data_stream;
   bool stdin_eof, data_eof;
 
-  FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc);
+  FCGIRequest(FCGIProtocolDriver& driver_, uint16_t id_, role_t role_, bool kc);
   ~FCGIRequest();
 
   enum ostream_type_t
@@ -87,7 +88,7 @@ public:
     , OVERLOADED       = 2
     , UNKNOWN_ROLE     = 3
     };
-  void end_request(u_int32_t appStatus, protocol_status_t protStatus);
+  void end_request(uint32_t appStatus, protocol_status_t protStatus);
 
   struct handler
   {
@@ -98,7 +99,7 @@ public:
 
 private:
   FCGIProtocolDriver& driver;
-  u_int8_t tmp_buf[64];
+  uint8_t tmp_buf[64];
 };
 
 //
@@ -128,25 +129,25 @@ private:                        // don't copy me
 
 protected:
   friend class FCGIRequest;
-  void terminate_request(u_int16_t id);
+  void terminate_request(uint16_t id);
   OutputCallback& output_cb;
 
 private:
-  typedef void (FCGIProtocolDriver::* proc_func_t)(u_int16_t, u_int8_t const *, u_int16_t);
+  typedef void (FCGIProtocolDriver::* proc_func_t)(uint16_t, uint8_t const *, uint16_t);
   static proc_func_t const proc_funcs[];
 
-  void process_begin_request(u_int16_t id, u_int8_t const * buf, u_int16_t len);
-  void process_abort_request(u_int16_t id, u_int8_t const * buf, u_int16_t len);
-  void process_params(u_int16_t id, u_int8_t const * buf, u_int16_t len);
-  void process_stdin(u_int16_t id, u_int8_t const * buf, u_int16_t len);
-  void process_unknown(u_int8_t type);
+  void process_begin_request(uint16_t id, uint8_t const * buf, uint16_t len);
+  void process_abort_request(uint16_t id, uint8_t const * buf, uint16_t len);
+  void process_params(uint16_t id, uint8_t const * buf, uint16_t len);
+  void process_stdin(uint16_t id, uint8_t const * buf, uint16_t len);
+  void process_unknown(uint8_t type);
 
-  typedef std::map<u_int16_t,FCGIRequest*> reqmap_t;
+  typedef std::map<uint16_t,FCGIRequest*> reqmap_t;
   reqmap_t reqmap;
-  std::queue<u_int16_t> new_request_queue;
+  std::queue<uint16_t> new_request_queue;
 
-  std::vector<u_int8_t> InputBuffer;
-  u_int8_t tmp_buf[64];
+  std::vector<uint8_t> InputBuffer;
+  uint8_t tmp_buf[64];
 };
 
 #endif // FASTCGI_HPP_INCLUDED

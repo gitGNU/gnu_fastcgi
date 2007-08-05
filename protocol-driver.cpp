@@ -44,8 +44,8 @@ void FCGIProtocolDriver::process_input(void const * buf, size_t count)
   // Copy data to our own buffer.
 
   InputBuffer.insert( InputBuffer.end()
-                    , static_cast<u_int8_t const *>(buf)
-                    , static_cast<u_int8_t const *>(buf) + count
+                    , static_cast<uint8_t const *>(buf)
+                    , static_cast<uint8_t const *>(buf) + count
                     );
 
   // If there is enough data in the input buffer to contain a
@@ -68,8 +68,8 @@ void FCGIProtocolDriver::process_input(void const * buf, size_t count)
     // headers in our buffer already. If not, we can't process it
     // yet.
 
-    u_int16_t msg_len = (hp->contentLengthB1 << 8) + hp->contentLengthB0;
-    u_int16_t msg_id  = (hp->requestIdB1 << 8) + hp->requestIdB0;
+    uint16_t msg_len = (hp->contentLengthB1 << 8) + hp->contentLengthB0;
+    uint16_t msg_id  = (hp->requestIdB1 << 8) + hp->requestIdB0;
 
     if (InputBuffer.size() < sizeof(Header)+msg_len+hp->paddingLength)
       return;
@@ -131,7 +131,7 @@ bool FCGIProtocolDriver::have_active_requests()
     return true;
 }
 
-void FCGIProtocolDriver::terminate_request(u_int16_t id)
+void FCGIProtocolDriver::terminate_request(uint16_t id)
 {
   reqmap_t::iterator req;
   req = reqmap.find(id);

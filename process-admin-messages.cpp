@@ -12,7 +12,7 @@
 
 #include "internal.hpp"
 
-void FCGIProtocolDriver::process_unknown(u_int8_t type)
+void FCGIProtocolDriver::process_unknown(uint8_t type)
 {
   new(tmp_buf) UnknownTypeMsg(type);
   output_cb(tmp_buf, sizeof(UnknownTypeMsg));

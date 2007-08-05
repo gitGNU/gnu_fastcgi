@@ -12,7 +12,7 @@
 
 #include "internal.hpp"
 
-void FCGIProtocolDriver::process_begin_request(u_int16_t id, const u_int8_t* buf, u_int16_t)
+void FCGIProtocolDriver::process_begin_request(uint16_t id, const uint8_t* buf, uint16_t)
 {
   // Check whether we have an open request with that id already and
   // if, throw an exception.
@@ -33,7 +33,7 @@ void FCGIProtocolDriver::process_begin_request(u_int16_t id, const u_int8_t* buf
                               (br->flags & FLAG_KEEP_CONN) == 1);
 }
 
-void FCGIProtocolDriver::process_abort_request(u_int16_t id, const u_int8_t*, u_int16_t)
+void FCGIProtocolDriver::process_abort_request(uint16_t id, const uint8_t*, uint16_t)
 {
   // Find request instance for this id. Ignore message if non
   // exists, set ignore flag otherwise.
@@ -50,7 +50,7 @@ void FCGIProtocolDriver::process_abort_request(u_int16_t id, const u_int8_t*, u_
   }
 }
 
-void FCGIProtocolDriver::process_params(u_int16_t id, const u_int8_t* buf, u_int16_t len)
+void FCGIProtocolDriver::process_params(uint16_t id, const uint8_t* buf, uint16_t len)
 {
   // Find request instance for this id. Ignore message if non
   // exists.
@@ -74,9 +74,9 @@ void FCGIProtocolDriver::process_params(u_int16_t id, const u_int8_t* buf, u_int
 
   // Process message.
 
-  u_int8_t const * const  bufend(buf + len);
-  u_int32_t               name_len;
-  u_int32_t               data_len;
+  uint8_t const * const  bufend(buf + len);
+  uint32_t               name_len;
+  uint32_t               data_len;
   while(buf != bufend)
   {
     if (*buf >> 7 == 0)

@@ -12,7 +12,7 @@
 
 #include "internal.hpp"
 
-FCGIRequest::FCGIRequest(FCGIProtocolDriver& driver_, u_int16_t id_, role_t role_, bool kc)
+FCGIRequest::FCGIRequest(FCGIProtocolDriver& driver_, uint16_t id_, role_t role_, bool kc)
   : id(id_), role(role_), keep_connection(kc), aborted(false), stdin_eof(false)
   , data_eof(false), handler_cb(0), driver(driver_)
 {
@@ -46,12 +46,12 @@ void FCGIRequest::write(const char* buf, size_t count, ostream_type_t stream)
   driver.output_cb(buf, count);
 }
 
-void FCGIRequest::end_request(u_int32_t appStatus, FCGIRequest::protocol_status_t protStatus)
+void FCGIRequest::end_request(uint32_t appStatus, FCGIRequest::protocol_status_t protStatus)
 {
   // Terminate the stdout and stderr stream, and send the
   // end-request message.
 
-  u_int8_t* p = tmp_buf;
+  uint8_t* p = tmp_buf;
   new(p) Header(TYPE_STDOUT, id, 0);
   p += sizeof(Header);
   new(p) Header(TYPE_STDERR, id, 0);

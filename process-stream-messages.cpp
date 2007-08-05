@@ -12,7 +12,7 @@
 
 #include "internal.hpp"
 
-void FCGIProtocolDriver::process_stdin(u_int16_t id, const u_int8_t* buf, u_int16_t len)
+void FCGIProtocolDriver::process_stdin(uint16_t id, const uint8_t* buf, uint16_t len)
 {
   // Find request instance for this id. Ignore message if non
   // exists.
