@@ -99,7 +99,6 @@ public:
 
 private:
   FCGIProtocolDriver& driver;
-  uint8_t tmp_buf[64];
 };
 
 //
@@ -147,7 +146,6 @@ private:
   std::queue<uint16_t> new_request_queue;
 
   std::vector<uint8_t> InputBuffer;
-  uint8_t tmp_buf[64];
 };
 
 #endif // FASTCGI_HPP_INCLUDED

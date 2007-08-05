@@ -110,8 +110,8 @@ struct UnknownTypeMsg : public Header
 
 void FCGIProtocolDriver::process_unknown(uint8_t type)
 {
-  new(tmp_buf) UnknownTypeMsg(type);
-  output_cb(tmp_buf, sizeof(UnknownTypeMsg));
+  UnknownTypeMsg msg(type);
+  output_cb(&msg, sizeof(UnknownTypeMsg));
 }
 
 void FCGIProtocolDriver::process_begin_request(uint16_t id, uint8_t const * buf, uint16_t)
@@ -397,11 +397,8 @@ void FCGIRequest::write(char const * buf, size_t count, ostream_type_t stream)
 
   // Construct message.
 
-  if (stream == STDOUT)
-    new(tmp_buf) Header(TYPE_STDOUT, id, count);
-  else
-    new(tmp_buf) Header(TYPE_STDERR, id, count);
-  driver.output_cb(tmp_buf, sizeof(Header));
+  Header h(stream == STDOUT ? TYPE_STDOUT : TYPE_STDERR, id, count);
+  driver.output_cb(&h, sizeof(Header));
   driver.output_cb(buf, count);
 }
 
@@ -410,13 +407,15 @@ void FCGIRequest::end_request(uint32_t appStatus, FCGIRequest::protocol_status_t
   // Terminate the stdout and stderr stream, and send the
   // end-request message.
 
-  uint8_t* p = tmp_buf;
+  uint8_t buf[64];
+  uint8_t * p = buf;
+
   new(p) Header(TYPE_STDOUT, id, 0);
   p += sizeof(Header);
   new(p) Header(TYPE_STDERR, id, 0);
   p += sizeof(Header);
   new(p) EndRequestMsg(id, appStatus, protStatus);
   p += sizeof(EndRequestMsg);
-  driver.output_cb(tmp_buf, p-tmp_buf);
+  driver.output_cb(buf, p - buf);
   driver.terminate_request(id);
 }
