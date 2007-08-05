@@ -12,7 +12,7 @@
 
 #include "internal.hpp"
 
-const FCGIProtocolDriver::proc_func_t FCGIProtocolDriver::proc_funcs[] =
+FCGIProtocolDriver::proc_func_t const FCGIProtocolDriver::proc_funcs[] =
   { 0                                           // unused
   , &FCGIProtocolDriver::process_begin_request  // TYPE_BEGIN_REQUEST
   , &FCGIProtocolDriver::process_abort_request  // TYPE_ABORT_REQUEST
@@ -39,18 +39,21 @@ FCGIProtocolDriver::~FCGIProtocolDriver()
   }
 }
 
-void FCGIProtocolDriver::process_input(const void* buf, size_t count)
+void FCGIProtocolDriver::process_input(void const * buf, size_t count)
 {
   // Copy data to our own buffer.
 
-  InputBuffer.append(static_cast<const u_int8_t*>(buf), count);
+  InputBuffer.insert( InputBuffer.end()
+                    , static_cast<u_int8_t const *>(buf)
+                    , static_cast<u_int8_t const *>(buf) + count
+                    );
 
   // If there is enough data in the input buffer to contain a
   // header, interpret it.
 
   while(InputBuffer.size() >= sizeof(Header))
   {
-    const Header* hp  = reinterpret_cast<const Header*>(InputBuffer.data());
+    Header const * hp = reinterpret_cast<Header const *>(&InputBuffer[0]);
 
     // Check whether our peer speaks the correct protocol version.
 
@@ -84,13 +87,13 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
       if (hp->type > TYPE_UNKNOWN || proc_funcs[hp->type] == 0)
         process_unknown(hp->type);
       else
-        (this->*proc_funcs[hp->type])(msg_id, InputBuffer.data()+sizeof(Header), msg_len);
+        (this->*proc_funcs[hp->type])(msg_id, &InputBuffer[0]+sizeof(Header), msg_len);
     }
-    catch(const fcgi_io_callback_error&)
+    catch(fcgi_io_callback_error const &)
     {
       throw;
     }
-    catch(const std::exception& e)
+    catch(std::exception const & e)
     {
       std::cerr << "Caught exception while processing request #" << msg_id << ": " << e.what() << std::endl;
       terminate_request(msg_id);
@@ -104,7 +107,9 @@ void FCGIProtocolDriver::process_input(const void* buf, size_t count)
     // Remove the message from our buffer and contine processing
     // if there if something left.
 
-    InputBuffer.erase(0, sizeof(Header)+msg_len+hp->paddingLength);
+    InputBuffer.erase( InputBuffer.begin()
+                     , InputBuffer.begin()+sizeof(Header)+msg_len+hp->paddingLength
+                     );
   }
 }
 
