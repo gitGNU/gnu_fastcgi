@@ -10,7 +10,7 @@ LDFLAGS		=
 
 OBJS		= fastcgi.o
 
-.cc.o:
+.cpp.o:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
 
 all:		libfastcgi.a
@@ -33,10 +33,6 @@ clean::
 
 # Dependencies
 
-process-admin-messages.o:	internal.hpp fastcgi.hpp
-process-messages.o:		internal.hpp fastcgi.hpp
-process-stream-messages.o:	internal.hpp fastcgi.hpp
-protocol-driver.o:		internal.hpp fastcgi.hpp
-request.o:			internal.hpp fastcgi.hpp
-test.o:				fastcgi.hpp
-echo.o:				infrastructure.hpp
+$(OBJS):	fastcgi.hpp
+test.o:		fastcgi.hpp
+echo.o:		fastcgi.hpp
