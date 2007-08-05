@@ -1,9 +1,5 @@
 lib fastcgi
-  : process-admin-messages.cpp
-    process-messages.cpp
-    process-stream-messages.cpp
-    protocol-driver.cpp
-    request.cpp
+  : fastcgi.cpp
   : <variant>debug:<define>DEBUG_FASTCGI=1
   ;
 

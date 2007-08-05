@@ -4,12 +4,11 @@ CXX		= g++
 AR		= ar
 RANLIB		= ranlib
 
-CPPFLAGS	= -I../libscheduler -DDEBUG_FASTCGI -I$${BOOST_ROOT}
-CXXFLAGS	= -O3 -Wall -pipe
+CPPFLAGS	= -I../libscheduler -DDEBUG_FASTCGI
+CXXFLAGS	= -O2 -Wall
 LDFLAGS		=
 
-OBJS		= process-admin-messages.o process-messages.o \
-		  process-stream-messages.o protocol-driver.o request.o
+OBJS		= fastcgi.o
 
 .cc.o:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
