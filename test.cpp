@@ -29,7 +29,7 @@ public:
   {
     close(fd);
   }
-  virtual void operator() (const void* buf, size_t count)
+  virtual void operator() (void const * buf, size_t count)
   {
     ssize_t rc;
     rc = write(fd, buf, count);
@@ -146,7 +146,7 @@ try
   std::cerr << "FastCGI test program terminating." << std::endl;
   return 0;
 }
-catch(const std::exception &e)
+catch(std::exception const & e)
 {
   std::cerr << "Caught exception: " << e.what() << std::endl;
   return 1;

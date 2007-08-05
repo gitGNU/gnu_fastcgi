@@ -65,7 +65,7 @@ struct BeginRequest
   uint8_t reserved[5];
 };
 
-static const uint8_t FLAG_KEEP_CONN  = 1;
+static uint8_t const FLAG_KEEP_CONN = 1;
 
 struct EndRequestMsg : public Header
 {

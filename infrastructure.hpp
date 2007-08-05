@@ -96,13 +96,13 @@ public:
   }
 
 private:
-  virtual void operator() (const void* buf, size_t count)
+  virtual void operator() (void const * buf, size_t count)
   {
     if (write_buffer.empty())
     {
       int rc = write(mysocket, buf, count);
       if (rc >= 0)
-        write_buffer.append(static_cast<const char*>(buf)+rc, count-rc);
+        write_buffer.append(static_cast<char const *>(buf)+rc, count-rc);
       else if (errno != EINTR && errno != EAGAIN)
       {
         char tmp[1024];
@@ -111,10 +111,10 @@ private:
         throw fcgi_io_callback_error(tmp);
       }
       else
-        write_buffer.append(static_cast<const char*>(buf), count);
+        write_buffer.append(static_cast<char const *>(buf), count);
     }
     else
-      write_buffer.append(static_cast<const char*>(buf), count);
+      write_buffer.append(static_cast<char const *>(buf), count);
 
     if (!write_buffer.empty() && is_write_handler_registered == false)
     {
@@ -142,7 +142,7 @@ private:
           req->handler_cb->operator()(req);
         }
       }
-      catch(const std::exception& e)
+      catch(std::exception const & e)
       {
         std::cerr << "Caught exception thrown in FCGIProtocolDriver: " << e.what() << std::endl
                   << "Terminating connection " << mysocket << "." << std::endl;

@@ -12,7 +12,7 @@
 
 #include "internal.hpp"
 
-void FCGIProtocolDriver::process_begin_request(uint16_t id, const uint8_t* buf, uint16_t)
+void FCGIProtocolDriver::process_begin_request(uint16_t id, uint8_t const * buf, uint16_t)
 {
   // Check whether we have an open request with that id already and
   // if, throw an exception.
@@ -27,13 +27,13 @@ void FCGIProtocolDriver::process_begin_request(uint16_t id, const uint8_t* buf, 
   // Create a new request instance and store it away. The user may
   // get it after we've read all parameters.
 
-  const BeginRequest* br = reinterpret_cast<const BeginRequest*>(buf);
+  BeginRequest const * br = reinterpret_cast<BeginRequest const *>(buf);
   reqmap[id] = new FCGIRequest(*this, id,
                               FCGIRequest::role_t((br->roleB1 << 8) + br->roleB0),
                               (br->flags & FLAG_KEEP_CONN) == 1);
 }
 
-void FCGIProtocolDriver::process_abort_request(uint16_t id, const uint8_t*, uint16_t)
+void FCGIProtocolDriver::process_abort_request(uint16_t id, uint8_t const *, uint16_t)
 {
   // Find request instance for this id. Ignore message if non
   // exists, set ignore flag otherwise.
@@ -50,7 +50,7 @@ void FCGIProtocolDriver::process_abort_request(uint16_t id, const uint8_t*, uint
   }
 }
 
-void FCGIProtocolDriver::process_params(uint16_t id, const uint8_t* buf, uint16_t len)
+void FCGIProtocolDriver::process_params(uint16_t id, uint8_t const * buf, uint16_t len)
 {
   // Find request instance for this id. Ignore message if non
   // exists.
@@ -94,9 +94,9 @@ void FCGIProtocolDriver::process_params(uint16_t id, const uint8_t* buf, uint16_
       buf += 4;
     }
     assert(buf + name_len + data_len <= bufend);
-    std::string const name(reinterpret_cast<const char*>(buf), name_len);
+    std::string const name(reinterpret_cast<char const *>(buf), name_len);
     buf += name_len;
-    std::string const data(reinterpret_cast<const char*>(buf), data_len);
+    std::string const data(reinterpret_cast<char const *>(buf), data_len);
     buf += data_len;
 #ifdef DEBUG_FASTCGI
     std::cerr << "request #" << id << ": FCGIProtocolDriver received PARAM '" << name << "' = '" << data << "'"
