@@ -235,21 +235,6 @@ void FCGIProtocolDriver::process_stdin(uint16_t id, uint8_t const * buf, uint16_
     (*req->second->handler_cb)(req->second);
 }
 
-FCGIProtocolDriver::proc_func_t const FCGIProtocolDriver::proc_funcs[] =
-  { 0                                           // unused
-  , &FCGIProtocolDriver::process_begin_request  // TYPE_BEGIN_REQUEST
-  , &FCGIProtocolDriver::process_abort_request  // TYPE_ABORT_REQUEST
-  , 0                                           // TYPE_END_REQUEST
-  , &FCGIProtocolDriver::process_params         // TYPE_PARAMS
-  , &FCGIProtocolDriver::process_stdin          // TYPE_STDIN
-  , 0                                           // TYPE_STDOUT
-  , 0                                           // TYPE_STDERR
-  , 0                                           // TYPE_DATA
-  , 0                                           // TYPE_GET_VALUES
-  , 0                                           // TYPE_GET_VALUES_RESULT
-  , 0                                           // TYPE_UNKNOWN
-  };
-
 FCGIProtocolDriver::FCGIProtocolDriver(OutputCallback& cb) : output_cb(cb)
 {
 }
@@ -307,10 +292,34 @@ void FCGIProtocolDriver::process_input(void const * buf, size_t count)
                 << "body len = " << msg_len << ", "
                 << "type = " << (int)hp->type << std::endl;
 #endif
-      if (hp->type > TYPE_UNKNOWN || proc_funcs[hp->type] == 0)
-        process_unknown(hp->type);
-      else
-        (this->*proc_funcs[hp->type])(msg_id, &InputBuffer[0]+sizeof(Header), msg_len);
+      switch (hp->type)
+      {
+        case TYPE_BEGIN_REQUEST:
+          process_begin_request(msg_id, &InputBuffer[0]+sizeof(Header), msg_len);
+          break;
+
+        case TYPE_ABORT_REQUEST:
+          process_abort_request(msg_id, &InputBuffer[0]+sizeof(Header), msg_len);
+          break;
+
+        case TYPE_PARAMS:
+          process_params(msg_id, &InputBuffer[0]+sizeof(Header), msg_len);
+          break;
+
+        case TYPE_STDIN:
+          process_stdin(msg_id, &InputBuffer[0]+sizeof(Header), msg_len);
+          break;
+
+        case TYPE_END_REQUEST:
+        case TYPE_STDOUT:
+        case TYPE_STDERR:
+        case TYPE_DATA:
+        case TYPE_GET_VALUES:
+        case TYPE_GET_VALUES_RESULT:
+        case TYPE_UNKNOWN:
+        default:
+          process_unknown(hp->type);
+      }
     }
     catch(fcgi_io_callback_error const &)
     {

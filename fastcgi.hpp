@@ -79,6 +79,7 @@ public:
     { STDOUT
     , STDERR
     };
+
   void write(std::string const & buf, ostream_type_t stream = STDOUT);
   void write(char const * buf, size_t count, ostream_type_t stream = STDOUT);
 
@@ -114,7 +115,6 @@ public:
     virtual void operator() (void const *, size_t) = 0;
   };
 
-public:
   FCGIProtocolDriver(OutputCallback& cb);
   ~FCGIProtocolDriver();
 
@@ -132,9 +132,6 @@ protected:
   OutputCallback& output_cb;
 
 private:
-  typedef void (FCGIProtocolDriver::* proc_func_t)(uint16_t, uint8_t const *, uint16_t);
-  static proc_func_t const proc_funcs[];
-
   void process_begin_request(uint16_t id, uint8_t const * buf, uint16_t len);
   void process_abort_request(uint16_t id, uint8_t const * buf, uint16_t len);
   void process_params(uint16_t id, uint8_t const * buf, uint16_t len);
