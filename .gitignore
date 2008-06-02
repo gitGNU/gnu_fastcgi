@@ -1,1 +1,4 @@
-/index.html
+# ignore generated files
+
+*.fcgi
+*.o

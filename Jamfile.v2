@@ -1,7 +1,0 @@
-lib fastcgi
-  : fastcgi.cpp
-  : <variant>debug:<define>DEBUG_FASTCGI=1
-  ;
-
-exe test : test.cpp fastcgi : <include>../scheduler ;
-exe echo : echo.cpp fastcgi : <include>../scheduler ;
