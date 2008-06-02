@@ -1,4 +1,0 @@
-exe test
-  : test.cpp
-  : <library>/boost/test//boost_prg_exec_monitor
-  ;
