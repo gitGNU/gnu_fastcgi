@@ -13,6 +13,9 @@
 #include "fastcgi.hpp"
 #include <iostream>
 
+#include <cstring>
+#include <cassert>
+
 enum message_type_t
   { TYPE_BEGIN_REQUEST     =  1
   , TYPE_ABORT_REQUEST     =  2
