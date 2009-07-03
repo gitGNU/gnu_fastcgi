@@ -15,12 +15,13 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <cstdio>
 #include <sys/resource.h>       // POSIX.1
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "scheduler.hpp"        // http://cryp.to/libscheduler/
+#include "scheduler.hpp"
 
 //
 // Networking Code
@@ -112,7 +113,7 @@ private:
       else if (errno != EINTR && errno != EAGAIN)
       {
         char tmp[1024];
-        snprintf(tmp, sizeof(tmp), "An error occured while writing to fd %d: %s",
+        std::snprintf(tmp, sizeof(tmp), "An error occured while writing to fd %d: %s",
                 mysocket, strerror(errno));
         throw fcgi_io_callback_error(tmp);
       }

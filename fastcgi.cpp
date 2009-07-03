@@ -13,6 +13,7 @@
 #include "fastcgi.hpp"
 #include <iostream>
 
+#include <cstdio>
 #include <cstring>
 #include <cassert>
 
@@ -125,7 +126,7 @@ void FCGIProtocolDriver::process_begin_request(uint16_t id, uint8_t const * buf,
   if (reqmap.find(id) != reqmap.end())
   {
     char tmp[256];
-    sprintf(tmp, "FCGIProtocolDriver received duplicate BEGIN_REQUEST id %u.", id);
+    std::sprintf(tmp, "FCGIProtocolDriver received duplicate BEGIN_REQUEST id %u.", id);
     throw duplicate_begin_request(tmp);
   }
 
@@ -271,7 +272,7 @@ void FCGIProtocolDriver::process_input(void const * buf, size_t count)
     if (hp->version != 1)
     {
       char buf[256];
-      sprintf(buf, "FCGIProtocolDriver cannot handle protocol version %u.", hp->version);
+      std::sprintf(buf, "FCGIProtocolDriver cannot handle protocol version %u.", hp->version);
       throw unsupported_fcgi_version(buf);
     }
 
