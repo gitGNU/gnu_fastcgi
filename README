@@ -53,26 +53,25 @@ Install with lighttpd 1.4.16
  ``<ServerRoot>/fcgi-bin/``. Then modify ``lighttpd.conf`` to spawn the
  processes on demand::
 
-  fastcgi.server  =
-    ( "test.fcgi" =>
-      ( "localhost" =>
-        ( "socket" => "/var/run/lighttpd-test-fastcgi.socket"
-        , "bin-path" => "<ServerRoot>/fcgi-bin/test.fcgi"
-        , "check-local" => "disable"
-        , "min-procs" => 1
-        , "max-procs" => 3
-        )
+  fastcgi.server = ( "test.fcgi" =>
+    ( "localhost" =>
+      ( "socket" => "/var/run/lighttpd-test-fastcgi.socket"
+      , "bin-path" => "<ServerRoot>/fcgi-bin/test.fcgi"
+      , "check-local" => "disable"
+      , "min-procs" => 1
+      , "max-procs" => 3
       )
-    , "echo.fcgi" =>
-      ( "localhost" =>
-        ( "socket" => "/var/run/lighttpd-echo-fastcgi.socket"
-        , "bin-path" => "<ServerRoot>/fcgi-bin/echo.fcgi"
-        , "check-local" => "disable"
-        , "min-procs" => 1
-        , "max-procs" => 3
-        )
+    ),
+    "echo.fcgi" =>
+    ( "localhost" =>
+      ( "socket" => "/var/run/lighttpd-echo-fastcgi.socket"
+      , "bin-path" => "<ServerRoot>/fcgi-bin/echo.fcgi"
+      , "check-local" => "disable"
+      , "min-procs" => 1
+      , "max-procs" => 3
       )
     )
+  )
 
  Go to http://localhost/test.fcgi and watch lighttpd's access log. If
  nothing shows up there, try the error log.
