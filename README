@@ -96,6 +96,6 @@ Copyleft
 .. References used in the text above
 .. .................................
 
-.. _libfastcgi-HEAD.tar.gz: http://git.cryp.to/?p=libfastcgi;a=snapshot;h=HEAD
+.. _libfastcgi-HEAD.tar.gz: http://git.cryp.to/?p=fastcgi;a=snapshot;h=HEAD
 
 .. _git repository:
