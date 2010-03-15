@@ -16,218 +16,105 @@
  */
 
 #include "fastcgi.hpp"
+#include "ioxx/dispatch.hpp"
+#include <boost/shared_ptr.hpp>
 #include <iostream>             // ISO C++
 #include <sstream>
 #include <stdexcept>
-#include <string>
-#include <cstdio>
-#include <sys/resource.h>       // POSIX.1
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include "libscheduler/scheduler.hh"
 
-//
-// Networking Code
-//
-
-template<class T>
-class Listener : public scheduler::event_handler
+template<class IOCore, class RequestHandler>
+class ConnectionHandler : public FCGIProtocolDriver::OutputCallback
 {
 public:
-  Listener(scheduler& sched) : mysched(sched)
+  typedef IOCore                        io_core;
+  typedef typename io_core::socket      socket;
+  typedef typename socket::address      address;
+  typedef typename socket::event_set    event_set;
+  typedef typename socket::native_t     native_socket_t;
+
+  static void accept(io_core & io, socket & listen_socket)
   {
-    scheduler::handler_properties properties;
-    properties.poll_events  = POLLIN;
-    properties.read_timeout = 0;
-    mysched.register_handler(0, *this, properties);
-  }
-  virtual ~Listener()
-  {
-    mysched.remove_handler(0);
+    boost::shared_ptr<ConnectionHandler> p;
+    {
+      native_socket_t s;
+      address addr;
+      listen_socket.accept(s, addr);
+      p.reset(new ConnectionHandler(io, s));
+    }
+    p->_sock.modify(boost::bind(&ConnectionHandler::run, p, _1), socket::readable);
+    p->_sock.set_nonblocking();
+    p->_sock.set_linger_timeout(0);
   }
 
 private:
-  virtual void fd_is_readable(int fd)
-  {
-    int       socket;
-    sockaddr  sa;
-    socklen_t sa_len = sizeof(sa);
+  socket                _sock;
+  FCGIProtocolDriver    _fcgi_driver;
+  bool                  _terminate;
+  std::vector<char>     _write_buffer;
 
-    socket = accept(fd, &sa, &sa_len);
-    if (socket >= 0)
-      new T(mysched, socket);
-    else
-      throw std::runtime_error(std::string("accept() failed: ") + strerror(errno));
-  }
-  virtual void fd_is_writable(int)
+  ConnectionHandler(io_core & io, native_socket_t sock)
+  : _sock(io, sock), _fcgi_driver(*this), _terminate(false)
   {
-    throw std::logic_error("This routine should not be called.");
-  }
-  virtual void read_timeout(int)
-  {
-    throw std::logic_error("This routine should not be called.");
-  }
-  virtual void write_timeout(int)
-  {
-    throw std::logic_error("This routine should not be called.");
-  }
-  virtual void error_condition(int)
-  {
-    throw std::logic_error("This routine should not be called.");
-  }
-  virtual void pollhup(int)
-  {
-    throw std::logic_error("This routine should not be called.");
   }
 
-  scheduler& mysched;
-};
-
-template<class T>
-class ConnectionHandler : public scheduler::event_handler,
-			  public FCGIProtocolDriver::OutputCallback
-{
-public:
-  ConnectionHandler(scheduler& sched, int sock)
-    : mysched(sched), mysocket(sock), is_write_handler_registered(false),
-      driver(*this), terminate(false)
+  void shutdown()
   {
-    if (fcntl(sock, F_SETFL, O_NONBLOCK) == -1)
-      throw std::runtime_error(std::string("Can set non-blocking mode: ") + strerror(errno));
-
-    properties.poll_events  = POLLIN;
-    properties.read_timeout = 0;
-    mysched.register_handler(mysocket, *this, properties);
-  }
-  ~ConnectionHandler()
-  {
-    mysched.remove_handler(mysocket);
-    close(mysocket);
+    _sock.modify(typename io_core::dispatch::handler(), socket::no_events);
   }
 
-private:
-  virtual void operator() (void const * buf, size_t count)
+  void run(event_set ev)
   {
-    if (write_buffer.empty())
+    try
     {
-      int rc = write(mysocket, buf, count);
-      if (rc >= 0)
-        write_buffer.append(static_cast<char const *>(buf)+rc, count-rc);
-      else if (errno != EINTR && errno != EAGAIN)
+      if (ev & socket::readable)
       {
-        char tmp[1024];
-        std::snprintf(tmp, sizeof(tmp), "An error occured while writing to fd %d: %s",
-                mysocket, strerror(errno));
-        throw fcgi_io_callback_error(tmp);
-      }
-      else
-        write_buffer.append(static_cast<char const *>(buf), count);
-    }
-    else
-      write_buffer.append(static_cast<char const *>(buf), count);
-
-    if (!write_buffer.empty() && is_write_handler_registered == false)
-    {
-      properties.poll_events   = POLLIN | POLLOUT;
-      properties.write_timeout = 0;
-      mysched.register_handler(mysocket, *this, properties);
-      is_write_handler_registered = true;
-    }
-  }
-  virtual void fd_is_readable(int fd)
-  {
-    char tmp[1024*10];
-    int rc = read(fd, tmp, sizeof(tmp));
-    if (rc > 0)
-    {
-      try
-      {
-        driver.process_input(tmp, rc);
-        FCGIRequest* req = driver.get_request();
+        char tmp[1024*10];
+        char * data_end( _sock.read(tmp, tmp + sizeof(tmp)) );
+        if (!data_end) return shutdown();
+        _fcgi_driver.process_input(tmp, data_end - tmp);
+        FCGIRequest* req( _fcgi_driver.get_request() );
         if (req)
         {
-          if (req->keep_connection == false)
-            terminate = true;
-          req->handler_cb = new T;
+          _terminate = (req->keep_connection == false);
+          req->handler_cb = new RequestHandler;
           req->handler_cb->operator()(req);
         }
       }
-      catch(std::exception const & e)
+      if (ev & socket::writable)
       {
-        std::cerr << "Caught exception thrown in FCGIProtocolDriver: " << e.what() << std::endl
-                  << "Terminating connection " << mysocket << "." << std::endl;
-        delete this;
-        return;
+        if (!_write_buffer.empty())
+        {
+          char const * p( _sock.write(&_write_buffer[0], &_write_buffer[_write_buffer.size()]) );
+          if (!p) throw ioxx::system_error(errno, "cannot write to socket");
+          _write_buffer.erase(_write_buffer.begin(), _write_buffer.begin() + (p - &_write_buffer[0]));
+        }
+        if (_write_buffer.empty())
+          _sock.request(socket::readable);
       }
-      catch(...)
-      {
-        std::cerr << "Caught unknown exception in FCGIProtocolDriver; terminating connection "
-                  << mysocket << "." << std::endl;
-        delete this;
-        return;
-      }
+      if (_terminate && !_fcgi_driver.have_active_requests() && _write_buffer.empty())
+        shutdown();
     }
-    else if (rc <= 0 && errno != EINTR && errno != EAGAIN)
+    catch(std::exception const & e)
     {
-      std::cerr << "An error occured while reading from fd " << mysocket << ": " << strerror(errno) << std::endl;
-      delete this;
-      return;
+      std::cerr << "Caught exception in FCGIProtocolDriver: " << e.what() << std::endl
+                << "Terminating connection " << _sock << "." << std::endl;
+      return shutdown();
     }
-    terminate_if_we_shall();
-  }
-  virtual void fd_is_writable(int fd)
-  {
-    if (write_buffer.empty())
+    catch(...)
     {
-      properties.poll_events = POLLIN;
-      mysched.register_handler(mysocket, *this, properties);
-      is_write_handler_registered = false;
+      std::cerr << "Caught unknown exception in FCGIProtocolDriver; terminating connection "
+                << _sock << "." << std::endl;
+      return shutdown();
     }
-    else
-    {
-      int rc = write(fd, write_buffer.data(), write_buffer.length());
-      if (rc > 0)
-        write_buffer.erase(0, rc);
-      else if (rc < 0 && errno != EINTR && errno != EAGAIN)
-      {
-        std::cerr << "An error occured while writing to fd " << mysocket << ": " << strerror(errno) << std::endl;
-        delete this;
-        return;
-      }
-    }
-    terminate_if_we_shall();
-  }
-  virtual void read_timeout(int)
-  {
-    throw std::logic_error("Not implemented yet.");
-  }
-  virtual void write_timeout(int)
-  {
-    throw std::logic_error("Not implemented yet.");
-  }
-  virtual void error_condition(int)
-  {
-    throw std::logic_error("Not implemented yet.");
-  }
-  virtual void pollhup(int)
-  {
-    throw std::logic_error("Not implemented yet.");
-  }
-  void terminate_if_we_shall()
-  {
-    if (terminate && driver.have_active_requests() == false && write_buffer.empty())
-      delete this;
   }
 
-  scheduler& mysched;
-  scheduler::handler_properties properties;
-  int mysocket;
-  bool is_write_handler_registered;
-  FCGIProtocolDriver driver;
-  std::string write_buffer;
-  bool terminate;
+  virtual void operator() (void const * buf, size_t count)
+  {
+    bool const start_writer( _write_buffer.empty() );
+    _write_buffer.insert(_write_buffer.end(), static_cast<char const *>(buf), static_cast<char const *>(buf) + count);
+    if (start_writer)
+      _sock.request(socket::readable | socket::writable);
+  }
 };
 
 //
@@ -283,40 +170,39 @@ private:
   }
 };
 
-//
-// The main program.
-//
+///// main program ////////////////////////////////////////////////////////////
 
 int main(int, char**)
 try
 {
-  // Set a limit on the number of open files.
+  typedef ioxx::dispatch<>                              io_core;
+  typedef io_core::socket                               socket;
+  typedef ConnectionHandler<io_core, RequestHandler>    fcgi_handler;
+  using boost::ref;
 
-  rlimit rlim;
-  getrlimit(RLIMIT_NOFILE, &rlim);
-  rlim.rlim_cur = 8;
-  rlim.rlim_max = 8;
-  if (setrlimit(RLIMIT_NOFILE, &rlim) != 0)
-    throw std::runtime_error("setrlimit() failed.");
+  // The main i/o event dispatcher.
+  io_core io;
 
-  // Let's go.
+  // Accept FastCGI connections on stdin.
+  io_core::socket acceptor( io, STDIN_FILENO );
+  acceptor.close_on_destruction(false);
+  acceptor.modify(boost::bind(fcgi_handler::accept, ref(io), ref(acceptor)), socket::readable);
 
-  scheduler sched;
-  Listener< ConnectionHandler<RequestHandler> > listener(sched);
-  while(!sched.empty())
+  // The main i/o loop.
+  for (;;)
   {
-    sched.schedule();
-    //sched.dump(std::cerr);
+    io.run();
+    io.wait(io.max_timeout());
   }
   return 0;
 }
-catch(const std::exception &e)
+catch(std::exception const & e)
 {
-  std::cerr << "Caught exception: " << e.what() << std::endl;
+  std::cerr << "*** error: " << e.what() << std::endl;
   return 1;
 }
 catch(...)
 {
-  std::cerr << "Caught unknown exception." << std::endl;
-  return 1;
+  std::cerr << "*** unknown error; terminating" << std::endl;
+  return 2;
 }

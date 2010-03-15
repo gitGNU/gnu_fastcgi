@@ -1,27 +1,38 @@
-# Build the fastcgi example programs.
+# Build the fastcgi library.
 
 CXX		= g++
-CPPFLAGS	= -DDEBUG_FASTCGI
+AR		= ar
+RANLIB		= ranlib
+
+CPPFLAGS	= -Iioxx/include -DDEBUG_FASTCGI
 CXXFLAGS	= -O3 -Wall
 LDFLAGS		=
+
+OBJS		= fastcgi.o
 
 .cpp.o:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
 
 all:		test.fcgi echo.fcgi
 
-test.fcgi:	test.o fastcgi.o
-	$(CXX) $(LDFLAGS) -o $@ test.o fastcgi.o
+libfastcgi.a:	$(OBJS)
+	@rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(RANLIB) $@
 
-echo.fcgi:	echo.o fastcgi.o
-	$(CXX) $(LDFLAGS) -o $@ echo.o fastcgi.o
+test.fcgi:	test.o libfastcgi.a
+	$(CXX) $(LDFLAGS) -o $@ test.o libfastcgi.a
+
+echo.fcgi:	echo.o libfastcgi.a
+	$(CXX) $(LDFLAGS) -o $@ echo.o libfastcgi.a
 
 clean::
-	@rm -f fastcgi.o test.fcgi test.o echo.fcgi echo.o
+	@rm -f libfastcgi.a $(OBJS)
+	@rm -f test.fcgi test.o echo.fcgi echo.o
 	@rm -f *.bak
 
 # Dependencies
 
-fastcgi.o:	fastcgi.hpp
+$(OBJS):	fastcgi.hpp
 test.o:		fastcgi.hpp
 echo.o:		fastcgi.hpp
