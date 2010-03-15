@@ -26,7 +26,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "scheduler.hpp"
+#include "libscheduler/scheduler.hh"
 
 //
 // Networking Code
