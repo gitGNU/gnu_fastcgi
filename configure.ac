@@ -14,7 +14,7 @@ AC_INIT([fastcgi], [1.0], [simons@cryp.to], [fastcgi],
 AC_PREREQ(2.65)
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE([-Wall -Werror 1.11 gnu std-options filename-length-max=99])
+AM_INIT_AUTOMAKE([-Wall -Werror 1.11 gnu filename-length-max=99])
 AC_MSG_NOTICE([$PACKAGE_STRING])
 
 AC_PROG_CXX
