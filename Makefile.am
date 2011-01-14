@@ -11,7 +11,8 @@
 AM_CPPFLAGS	= -DDEBUG_FASTCGI
 AM_CXXFLAGS	= -O3 -Wall
 
-EXTRA_DIST = fastcgi.hpp libscheduler
+EXTRA_DIST = fastcgi.hpp libscheduler/COPYING libscheduler/COPYING.LESSER libscheduler/Makefile
+EXTRA_DIST += libscheduler/pollvector.hh libscheduler/scheduler.hh libscheduler/test.cc
 
 bin_PROGRAMS = test.fcgi echo.fcgi
 
