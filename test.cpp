@@ -20,6 +20,7 @@
 #include <string>
 #include <sstream>
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "fastcgi.hpp"
